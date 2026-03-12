@@ -29,7 +29,8 @@
                 <div class="border rounded-lg p-4 {{ $item->is_mandatory ? 'bg-gray-50' : '' }}">
                     <div class="flex items-start">
                         <div class="flex-shrink-0 mt-1">
-                            <input type="checkbox" class="h-5 w-5 text-red-800 rounded border-gray-300">
+                            <input type="checkbox" disabled
+                                   class="h-5 w-5 text-red-800 rounded border-gray-300 pointer-events-none cursor-default opacity-60">
                         </div>
                         <div class="ml-3">
                             <h3 class="font-medium">

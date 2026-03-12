@@ -73,7 +73,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
         if ($user->isStudent()) {
-            return redirect()->route('student.home');
+            return redirect()->route('student.dashboard');
         } elseif ($user->isLandlord()) {
             return redirect()->route('landlord.dashboard');
         } elseif ($user->isWelfare()) {

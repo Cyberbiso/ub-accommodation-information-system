@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         if ($user->isStudent()) {
-            return redirect()->intended(route('student.home'));
+            return redirect()->intended(route('student.dashboard'));
         } elseif ($user->isLandlord()) {
             return redirect()->intended(route('landlord.dashboard'));
         } elseif ($user->isWelfare()) {
