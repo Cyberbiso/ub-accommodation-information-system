@@ -197,12 +197,11 @@
                         @enderror
                     </div>
 
-                    <!-- Passport (international students only — shown dynamically) -->
-                    <div id="passport-section" class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition" style="display:none">
+                    <!-- Passport (all students) -->
+                    <div id="passport-section" class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition">
                         <label class="block text-sm font-medium text-gray-700 mb-3">
                             <i class="fas fa-passport text-red-600 mr-2"></i>
                             Passport Copy <span class="text-red-600">*</span>
-                            <span class="text-xs text-gray-500 font-normal ml-1">(International students)</span>
                         </label>
                         <div class="flex items-center space-x-3">
                             <input type="file" name="passport" id="passport"
@@ -267,13 +266,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function show(el) { if (el) el.style.display = 'block'; }
     function hide(el) { if (el) el.style.display = 'none'; }
 
-    function checkPassport() {
-        if (!studentRadio.checked) { hide(passportSec); setRequired(passportInput, false); return; }
-        const isIntl = emailInput.value.length > 0 && !emailInput.value.toLowerCase().endsWith('.bw');
-        if (isIntl) { show(passportSec); setRequired(passportInput, true); }
-        else        { hide(passportSec); setRequired(passportInput, false); }
-    }
-
     function toggleRole() {
         const isStudent = studentRadio.checked;
 
@@ -286,10 +278,14 @@ document.addEventListener('DOMContentLoaded', function () {
             isStudent ? hide(el) : show(el);
         });
 
-        // Documents section
+        // Documents section (students only)
         if (isStudent) show(docsSection); else hide(docsSection);
 
-        // Required
+        // Passport always shown for students
+        if (isStudent) { show(passportSec); setRequired(passportInput, true); }
+        else           { hide(passportSec); setRequired(passportInput, false); }
+
+        // Required fields
         setRequired(studentIdInput,  isStudent);
         setRequired(surnameInput,    isStudent);
         setRequired(companyInput,    !isStudent);
@@ -299,14 +295,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Email placeholder
         emailInput.placeholder = isStudent ? '201905436@ub.ac.bw' : 'your@email.com';
-
-        checkPassport();
     }
 
     studentRadio.addEventListener('change', toggleRole);
     landlordRadio.addEventListener('change', toggleRole);
-    emailInput.addEventListener('blur',  checkPassport);
-    emailInput.addEventListener('input', checkPassport);
 
     // File name display
     [

@@ -39,11 +39,11 @@ class RegisteredUserController extends Controller
         // Student-specific validation
         if ($request->role === 'student') {
             $request->validate([
-                'student_id' => 'required|string|max:20|unique:users,student_id',
-                'surname' => 'required|string|max:255',
-                'first_name' => 'required|string|max:255',
-                'acceptance_letter' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'student_id'          => 'required|string|max:20|unique:users,student_id',
+                'surname'             => 'required|string|max:255',
+                'acceptance_letter'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
                 'proof_of_registration' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'passport'            => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ]);
         }
 
@@ -67,8 +67,7 @@ class RegisteredUserController extends Controller
         // Add student-specific fields
         if ($request->role === 'student') {
             $userData['student_id'] = $request->student_id;
-            $userData['surname'] = $request->surname;
-            $userData['first_name'] = $request->first_name;
+            $userData['surname']    = $request->surname;
         }
 
         // Add landlord-specific fields
@@ -84,10 +83,7 @@ class RegisteredUserController extends Controller
         if ($request->role === 'student') {
             $this->uploadStudentDocument($request, $user, 'acceptance_letter');
             $this->uploadStudentDocument($request, $user, 'proof_of_registration');
-
-            if ($request->hasFile('passport')) {
-                $this->uploadStudentDocument($request, $user, 'passport');
-            }
+            $this->uploadStudentDocument($request, $user, 'passport');
         }
 
         event(new Registered($user));
