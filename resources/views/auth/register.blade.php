@@ -229,6 +229,69 @@
                 </div>
             </div>
 
+            <!-- STEP 4b: Landlord Documents (landlords only) -->
+            <div id="landlord-documents-section" class="bg-gray-50 rounded-xl p-6 mb-6" style="display:none">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-red-800 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-file-contract text-white text-sm"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900">Required Documents</h3>
+                </div>
+
+                <div class="space-y-5">
+                    <!-- Lease Agreement -->
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            <i class="fas fa-file-contract text-red-600 mr-2"></i>
+                            Lease / Ownership Agreement <span class="text-red-600">*</span>
+                        </label>
+                        <div class="flex items-center space-x-3">
+                            <input type="file" name="lease_agreement" id="lease_agreement"
+                                   accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+                            <button type="button" onclick="document.getElementById('lease_agreement').click()"
+                                    class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center">
+                                <i class="fas fa-upload mr-2"></i>Choose File
+                            </button>
+                            <span id="lease_file_name" class="text-sm text-gray-500">No file chosen</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">PDF, JPG or PNG (Max 2MB)</p>
+                        @error('lease_agreement')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Identity Document -->
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            <i class="fas fa-id-card text-red-600 mr-2"></i>
+                            Identity Document (ID / Passport) <span class="text-red-600">*</span>
+                        </label>
+                        <div class="flex items-center space-x-3">
+                            <input type="file" name="identity_document" id="identity_document"
+                                   accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+                            <button type="button" onclick="document.getElementById('identity_document').click()"
+                                    class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center">
+                                <i class="fas fa-upload mr-2"></i>Choose File
+                            </button>
+                            <span id="identity_file_name" class="text-sm text-gray-500">No file chosen</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">PDF, JPG or PNG (Max 2MB)</p>
+                        @error('identity_document')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                    <div class="flex">
+                        <i class="fas fa-info-circle text-yellow-600 mr-2 mt-0.5"></i>
+                        <p class="text-sm text-gray-700">
+                            Your documents will be reviewed by the Admin before your property listings go live. This usually takes 1–2 business days.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <button type="submit" class="auth-button w-full text-white font-semibold py-3 px-4 rounded-lg transition">
                 Create Account
             </button>
@@ -249,13 +312,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const passportSec   = document.getElementById('passport-section');
     const emailInput    = document.getElementById('email');
 
-    const studentIdInput  = document.getElementById('student_id');
-    const surnameInput    = document.getElementById('surname');
-    const companyInput    = document.getElementById('company_name');
-    const phoneInput      = document.getElementById('phone');
-    const acceptanceInput = document.getElementById('acceptance_letter');
-    const proofInput      = document.getElementById('proof_of_registration');
-    const passportInput   = document.getElementById('passport');
+    const landlordDocsSection = document.getElementById('landlord-documents-section');
+
+    const studentIdInput    = document.getElementById('student_id');
+    const surnameInput      = document.getElementById('surname');
+    const companyInput      = document.getElementById('company_name');
+    const phoneInput        = document.getElementById('phone');
+    const acceptanceInput   = document.getElementById('acceptance_letter');
+    const proofInput        = document.getElementById('proof_of_registration');
+    const passportInput     = document.getElementById('passport');
+    const leaseInput        = document.getElementById('lease_agreement');
+    const identityInput     = document.getElementById('identity_document');
 
     function setRequired(el, val) {
         if (!el) return;
@@ -281,6 +348,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // Documents section (students only)
         if (isStudent) show(docsSection); else hide(docsSection);
 
+        // Landlord documents section
+        if (!isStudent) show(landlordDocsSection); else hide(landlordDocsSection);
+
         // Passport always shown for students
         if (isStudent) { show(passportSec); setRequired(passportInput, true); }
         else           { hide(passportSec); setRequired(passportInput, false); }
@@ -292,6 +362,8 @@ document.addEventListener('DOMContentLoaded', function () {
         setRequired(phoneInput,      !isStudent);
         setRequired(acceptanceInput, isStudent);
         setRequired(proofInput,      isStudent);
+        setRequired(leaseInput,      !isStudent);
+        setRequired(identityInput,   !isStudent);
 
         // Email placeholder
         emailInput.placeholder = isStudent ? '201905436@ub.ac.bw' : 'your@email.com';
@@ -305,6 +377,8 @@ document.addEventListener('DOMContentLoaded', function () {
         ['acceptance_letter',    'acceptance_file_name'],
         ['proof_of_registration','proof_file_name'],
         ['passport',             'passport_file_name'],
+        ['lease_agreement',      'lease_file_name'],
+        ['identity_document',    'identity_file_name'],
     ].forEach(function([inputId, spanId]) {
         var inp  = document.getElementById(inputId);
         var span = document.getElementById(spanId);

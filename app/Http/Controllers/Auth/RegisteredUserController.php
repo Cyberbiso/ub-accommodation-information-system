@@ -50,8 +50,10 @@ class RegisteredUserController extends Controller
         // Landlord-specific validation
         if ($request->role === 'landlord') {
             $request->validate([
-                'company_name' => 'required|string|max:255',
-                'phone' => 'required|string|max:20',
+                'company_name'      => 'required|string|max:255',
+                'phone'             => 'required|string|max:20',
+                'lease_agreement'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'identity_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ]);
         }
 
@@ -84,6 +86,12 @@ class RegisteredUserController extends Controller
             $this->uploadStudentDocument($request, $user, 'acceptance_letter');
             $this->uploadStudentDocument($request, $user, 'proof_of_registration');
             $this->uploadStudentDocument($request, $user, 'passport');
+        }
+
+        // Handle landlord document uploads
+        if ($request->role === 'landlord') {
+            $this->uploadStudentDocument($request, $user, 'lease_agreement');
+            $this->uploadStudentDocument($request, $user, 'identity_document');
         }
 
         event(new Registered($user));
