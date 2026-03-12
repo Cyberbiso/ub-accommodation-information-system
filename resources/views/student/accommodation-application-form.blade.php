@@ -56,7 +56,7 @@
         
         <div>
             <label class="block text-sm font-bold text-gray-700 mb-2">First Name:</label>
-            <input type="text" name="first_name" value="{{ old('first_name', Auth::user()->first_name ?? '') }}" 
+            <input type="text" name="first_name" value="{{ old('first_name', explode(' ', Auth::user()->name ?? '')[0]) }}" 
                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase bg-gray-100"
                    required readonly>
             <p class="text-xs text-gray-500 mt-1">Auto-filled from registration</p>

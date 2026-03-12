@@ -128,6 +128,61 @@ class StudentController extends Controller
     }
 
     /**
+     * Store a general accommodation application (no specific room pre-selected)
+     */
+    public function storeApplication(Request $request)
+    {
+        $request->validate([
+            'student_id'         => 'required|string|max:20',
+            'surname'            => 'required|string|max:255',
+            'first_name'         => 'required|string|max:255',
+            'gender'             => 'required|in:Male,Female,Other',
+            'mobile'             => 'required|string|max:20',
+            'university_email'   => 'required|email|max:255',
+            'emergency_name'     => 'required|string|max:255',
+            'emergency_relationship' => 'required|string|max:100',
+            'emergency_telephone' => 'required|string|max:20',
+            'emergency_address'  => 'required|string|max:500',
+            'reasons'            => 'required|string|max:2000',
+            'declaration_student_id' => 'required|string|max:20',
+            'medical_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        // Block duplicate pending applications
+        $existing = Application::where('student_id', Auth::id())
+            ->whereIn('status', ['pending', 'waitlisted'])
+            ->whereNull('accommodation_id')
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'You already have a pending accommodation application.');
+        }
+
+        // Handle medical certificate upload
+        $medicalCertPath = null;
+        if ($request->hasFile('medical_certificate')) {
+            $medicalCertPath = $request->file('medical_certificate')
+                ->store('medical_certificates/' . Auth::id(), 'public');
+        }
+
+        // Collect all form fields into form_data JSON
+        $formData = $request->except(['_token', 'medical_certificate']);
+
+        Application::create([
+            'student_id'         => Auth::id(),
+            'accommodation_id'   => null,
+            'status'             => 'pending',
+            'special_requirements' => $request->reasons,
+            'has_disability'     => $request->boolean('has_disability'),
+            'medical_certificate' => $medicalCertPath,
+            'form_data'          => $formData,
+        ]);
+
+        return redirect()->route('student.applications')
+            ->with('success', 'Your accommodation application has been submitted successfully! The Welfare Office will review it shortly.');
+    }
+
+    /**
      * Show single accommodation details
      */
     public function showAccommodation(Accommodation $accommodation)
