@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .hero-gradient {
+        background: linear-gradient(135deg, #800000 0%, #660000 100%);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+    
+    .auth-gradient {
+        background: linear-gradient(135deg, #800000 0%, #660000 100%);
+    }
+    
+    .auth-card {
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(128, 0, 0, 0.1);
+    }
+    
+    .auth-input {
+        border-color: #e5e7eb;
+        transition: all 0.2s;
+    }
+    
+    .auth-input:focus {
+        border-color: #800000;
+        ring-color: #800000;
+        box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+    }
+    
+    .auth-button {
+        background: linear-gradient(135deg, #800000 0%, #660000 100%);
+        transition: all 0.3s;
+    }
+    
+    .auth-button:hover {
+        background: linear-gradient(135deg, #990000 0%, #800000 100%);
+    }
+}
