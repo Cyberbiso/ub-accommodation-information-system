@@ -133,19 +133,21 @@ class StudentController extends Controller
     public function storeApplication(Request $request)
     {
         $request->validate([
-            'student_id'         => 'required|string|max:20',
-            'surname'            => 'required|string|max:255',
-            'first_name'         => 'required|string|max:255',
-            'gender'             => 'required|in:Male,Female,Other',
-            'mobile'             => 'required|string|max:20',
-            'university_email'   => 'required|email|max:255',
-            'emergency_name'     => 'required|string|max:255',
+            'student_id'             => 'required|string|max:20',
+            'surname'                => 'required|string|max:255',
+            'first_name'             => 'required|string|max:255',
+            'gender'                 => 'required|in:Male,Female,Other',
+            'mobile'                 => 'required|string|max:20',
+            'university_email'       => 'required|email|max:255',
+            'preferred_move_in_date' => 'required|date|after:today',
+            'duration_months'        => 'required|integer|in:6,9,12,18,24',
+            'emergency_name'         => 'required|string|max:255',
             'emergency_relationship' => 'required|string|max:100',
-            'emergency_telephone' => 'required|string|max:20',
-            'emergency_address'  => 'required|string|max:500',
-            'reasons'            => 'required|string|max:2000',
+            'emergency_telephone'    => 'required|string|max:20',
+            'emergency_address'      => 'required|string|max:500',
+            'reasons'                => 'required|string|max:2000',
             'declaration_student_id' => 'required|string|max:20',
-            'medical_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'medical_certificate'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
         // Block duplicate pending applications
@@ -171,7 +173,8 @@ class StudentController extends Controller
         Application::create([
             'student_id'             => Auth::id(),
             'accommodation_id'       => null,
-            'preferred_move_in_date' => null,
+            'preferred_move_in_date' => $request->preferred_move_in_date,
+            'duration_months'        => $request->duration_months,
             'status'                 => 'pending',
             'special_requirements'   => $request->reasons,
             'has_disability'         => $request->boolean('has_disability'),

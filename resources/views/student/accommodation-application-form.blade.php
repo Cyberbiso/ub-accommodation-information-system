@@ -212,7 +212,46 @@
                     </div>
                 </div>
 
-                <!-- 6) Emergency Contact -->
+                <!-- 6) Preferred Move-In Date -->
+                <div class="border-2 border-gray-300 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">6) Preferred Move-In Date</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Preferred Move-In Date: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="date" name="preferred_move_in_date"
+                                   value="{{ old('preferred_move_in_date') }}"
+                                   min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800"
+                                   required>
+                            <p class="text-xs text-gray-500 mt-1">Must be a future date.</p>
+                            @error('preferred_move_in_date')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Duration (months): <span class="text-red-600">*</span>
+                            </label>
+                            <select name="duration_months" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800" required>
+                                <option value="">Select duration</option>
+                                @foreach([6, 9, 12, 18, 24] as $months)
+                                    <option value="{{ $months }}" {{ old('duration_months') == $months ? 'selected' : '' }}>
+                                        {{ $months }} months
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('duration_months')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7) Emergency Contact -->
                 <div class="border-2 border-gray-300 p-6 rounded-lg">
                     <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">6) Emergency Contact/Next of Kin</h3>
                     
