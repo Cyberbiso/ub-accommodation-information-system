@@ -17,7 +17,7 @@
                 <h1 class="text-2xl font-bold">Department of Student Welfare</h1>
                 <h2 class="text-xl mt-2">Application for On-Campus Accommodation</h2>
             </div>
-            
+
             <!-- Instructions -->
             <div class="p-6 bg-yellow-50 border-l-4 border-yellow-400">
                 <p class="font-bold text-red-800 mb-2">PLEASE READ CAREFULLY</p>
@@ -30,85 +30,107 @@
                 </ul>
             </div>
 
-            <!-- FIXED: Changed from .apply.submit to .apply -->
-       <form method="POST" action="{{ route('student.applications.store') }}" class="p-6 space-y-8">            @csrf
+            <form method="POST" action="{{ route('student.applications.store') }}" enctype="multipart/form-data" class="p-6 space-y-8">
+                @csrf
 
-               <!-- 1) Personal Details -->
-<div class="border-2 border-gray-300 p-6 rounded-lg">
-    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">1) Personal Details</h3>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">Student ID:</label>
-            <input type="text" name="student_id" value="{{ old('student_id', Auth::user()->student_id) }}" 
-                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase bg-gray-100"
-                   placeholder="e.g., 201905436" required readonly>
-            <p class="text-xs text-gray-500 mt-1">Auto-filled from registration</p>
-        </div>
-        
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">Surname:</label>
-            <input type="text" name="surname" value="{{ old('surname', Auth::user()->surname ?? Auth::user()->name) }}" 
-                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase bg-gray-100"
-                   required readonly>
-            <p class="text-xs text-gray-500 mt-1">Auto-filled from registration</p>
-        </div>
-        
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">First Name:</label>
-            <input type="text" name="first_name" value="{{ old('first_name', explode(' ', Auth::user()->name ?? '')[0]) }}" 
-                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase bg-gray-100"
-                   required readonly>
-            <p class="text-xs text-gray-500 mt-1">Auto-filled from registration</p>
-        </div> 
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">Gender:</label>
-            <select name="gender" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800" required>
-                <option value="">Select Gender</option>
-                <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
-                <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
-                <option value="Other" {{ old('gender') == 'Other' ? 'selected' : '' }}>Other</option>
-            </select>
-        </div>
-    </div>
-   
+                <!-- Required field legend -->
+                <p class="text-sm text-gray-500"><span class="text-red-600 font-bold">*</span> Indicates a required field</p>
 
+                <!-- 1) Personal Details -->
+                <div class="border-2 border-gray-300 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">1) Personal Details</h3>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Student ID: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="text" name="student_id" value="{{ old('student_id', Auth::user()->student_id) }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase bg-gray-100"
+                                   placeholder="e.g., 201905436" required readonly>
+                            <p class="text-xs text-gray-500 mt-1">Auto-filled from registration</p>
+                        </div>
 
-                    <!-- Contact Numbers -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Surname: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="text" name="surname" value="{{ old('surname', Auth::user()->surname ?? Auth::user()->name) }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase bg-gray-100"
+                                   required readonly>
+                            <p class="text-xs text-gray-500 mt-1">Auto-filled from registration</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                First Name: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="text" name="first_name" value="{{ old('first_name', explode(' ', Auth::user()->name ?? '')[0]) }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase bg-gray-100"
+                                   required readonly>
+                            <p class="text-xs text-gray-500 mt-1">Auto-filled from registration</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Gender: <span class="text-red-600">*</span>
+                            </label>
+                            <select name="gender" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 @error('gender') border-red-500 @enderror" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male"   {{ old('gender') == 'Male'   ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                <option value="Other"  {{ old('gender') == 'Other'  ? 'selected' : '' }}>Other</option>
+                            </select>
+                            @error('gender')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- 2) Contact Numbers -->
                     <h3 class="text-xl font-bold mt-8 mb-4">2) Contact Number:</h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Telephone:</label>
-                            <input type="tel" name="telephone" value="{{ old('telephone') }}" 
+                            <input type="tel" name="telephone" value="{{ old('telephone') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800">
                         </div>
-                        
+
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Mobile:</label>
-                            <input type="tel" name="mobile" value="{{ old('mobile') }}" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800" required>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Mobile: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="tel" name="mobile" value="{{ old('mobile') }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 @error('mobile') border-red-500 @enderror" required>
+                            @error('mobile')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Mobile (alternate):</label>
-                            <input type="tel" name="mobile_alternate" value="{{ old('mobile_alternate') }}" 
+                            <input type="tel" name="mobile_alternate" value="{{ old('mobile_alternate') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">University Email:</label>
-                            <input type="email" name="university_email" value="{{ old('university_email', Auth::user()->email) }}" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800" required>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                University Email: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="email" name="university_email" value="{{ old('university_email', Auth::user()->email) }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 @error('university_email') border-red-500 @enderror" required>
                             <p class="text-xs text-gray-600 mt-1">Official means of communication</p>
+                            @error('university_email')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Other Email:</label>
-                            <input type="email" name="other_email" value="{{ old('other_email') }}" 
+                            <input type="email" name="other_email" value="{{ old('other_email') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800">
                         </div>
                     </div>
@@ -117,29 +139,26 @@
                 <!-- 3) Correspondence Address -->
                 <div class="border-2 border-gray-300 p-6 rounded-lg">
                     <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">3) Correspondence Address</h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Street/Box:</label>
-                            <input type="text" name="correspondence_street" value="{{ old('correspondence_street') }}" 
+                            <input type="text" name="correspondence_street" value="{{ old('correspondence_street') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">City/Town:</label>
-                            <input type="text" name="correspondence_city" value="{{ old('correspondence_city') }}" 
+                            <input type="text" name="correspondence_city" value="{{ old('correspondence_city') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Country:</label>
-                            <input type="text" name="correspondence_country" value="{{ old('correspondence_country', 'Botswana') }}" 
+                            <input type="text" name="correspondence_country" value="{{ old('correspondence_country', 'Botswana') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Postal Code:</label>
-                            <input type="text" name="correspondence_postal" value="{{ old('correspondence_postal') }}" 
+                            <input type="text" name="correspondence_postal" value="{{ old('correspondence_postal') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
                     </div>
@@ -148,29 +167,26 @@
                 <!-- 4) Permanent Address -->
                 <div class="border-2 border-gray-300 p-6 rounded-lg">
                     <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">4) Permanent Address</h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Street/Box:</label>
-                            <input type="text" name="permanent_street" value="{{ old('permanent_street') }}" 
+                            <input type="text" name="permanent_street" value="{{ old('permanent_street') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">City/Town:</label>
-                            <input type="text" name="permanent_city" value="{{ old('permanent_city') }}" 
+                            <input type="text" name="permanent_city" value="{{ old('permanent_city') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Country:</label>
-                            <input type="text" name="permanent_country" value="{{ old('permanent_country', 'Botswana') }}" 
+                            <input type="text" name="permanent_country" value="{{ old('permanent_country', 'Botswana') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Postal Code:</label>
-                            <input type="text" name="permanent_postal" value="{{ old('permanent_postal') }}" 
+                            <input type="text" name="permanent_postal" value="{{ old('permanent_postal') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
                     </div>
@@ -179,34 +195,31 @@
                 <!-- 5) Additional Details -->
                 <div class="border-2 border-gray-300 p-6 rounded-lg">
                     <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">5) Additional Details</h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Marital Status:</label>
                             <select name="marital_status" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800">
                                 <option value="">Select Status</option>
-                                <option value="single">Single</option>
-                                <option value="married">Married</option>
-                                <option value="divorced">Divorced</option>
-                                <option value="widowed">Widowed</option>
+                                <option value="single"   {{ old('marital_status') == 'single'   ? 'selected' : '' }}>Single</option>
+                                <option value="married"  {{ old('marital_status') == 'married'  ? 'selected' : '' }}>Married</option>
+                                <option value="divorced" {{ old('marital_status') == 'divorced' ? 'selected' : '' }}>Divorced</option>
+                                <option value="widowed"  {{ old('marital_status') == 'widowed'  ? 'selected' : '' }}>Widowed</option>
                             </select>
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Date of Birth:</label>
-                            <input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}" 
+                            <input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800">
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Place of Birth:</label>
-                            <input type="text" name="place_of_birth" value="{{ old('place_of_birth') }}" 
+                            <input type="text" name="place_of_birth" value="{{ old('place_of_birth') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
-                        
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Nationality:</label>
-                            <input type="text" name="nationality" value="{{ old('nationality', 'Botswana') }}" 
+                            <input type="text" name="nationality" value="{{ old('nationality', 'Botswana') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase">
                         </div>
                     </div>
@@ -224,7 +237,7 @@
                             <input type="date" name="preferred_move_in_date"
                                    value="{{ old('preferred_move_in_date') }}"
                                    min="{{ date('Y-m-d', strtotime('+1 day')) }}"
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 @error('preferred_move_in_date') border-red-500 @enderror"
                                    required>
                             <p class="text-xs text-gray-500 mt-1">Must be a future date.</p>
                             @error('preferred_move_in_date')
@@ -236,7 +249,7 @@
                             <label class="block text-sm font-bold text-gray-700 mb-2">
                                 Duration (months): <span class="text-red-600">*</span>
                             </label>
-                            <select name="duration_months" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800" required>
+                            <select name="duration_months" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 @error('duration_months') border-red-500 @enderror" required>
                                 <option value="">Select duration</option>
                                 @foreach([6, 9, 12, 18, 24] as $months)
                                     <option value="{{ $months }}" {{ old('duration_months') == $months ? 'selected' : '' }}>
@@ -251,64 +264,91 @@
                     </div>
                 </div>
 
-                <!-- 7) Emergency Contact -->
+                <!-- 7) Emergency Contact/Next of Kin -->
                 <div class="border-2 border-gray-300 p-6 rounded-lg">
-                    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">6) Emergency Contact/Next of Kin</h3>
-                    
+                    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">7) Emergency Contact/Next of Kin</h3>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Full Name:</label>
-                            <input type="text" name="emergency_name" value="{{ old('emergency_name') }}" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase" required>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Full Name: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="text" name="emergency_name" value="{{ old('emergency_name') }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase @error('emergency_name') border-red-500 @enderror" required>
+                            @error('emergency_name')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                        
+
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Relationship:</label>
-                            <input type="text" name="emergency_relationship" value="{{ old('emergency_relationship') }}" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase" required>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Relationship: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="text" name="emergency_relationship" value="{{ old('emergency_relationship') }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase @error('emergency_relationship') border-red-500 @enderror" required>
+                            @error('emergency_relationship')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                        
+
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Telephone:</label>
-                            <input type="tel" name="emergency_telephone" value="{{ old('emergency_telephone') }}" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800" required>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Telephone: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="tel" name="emergency_telephone" value="{{ old('emergency_telephone') }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 @error('emergency_telephone') border-red-500 @enderror" required>
+                            @error('emergency_telephone')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Mobile:</label>
-                            <input type="tel" name="emergency_mobile" value="{{ old('emergency_mobile') }}" 
+                            <input type="tel" name="emergency_mobile" value="{{ old('emergency_mobile') }}"
                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800">
                         </div>
-                        
-                        <div class="col-span-2">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Address:</label>
-                            <input type="text" name="emergency_address" value="{{ old('emergency_address') }}" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase" required>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Address: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="text" name="emergency_address" value="{{ old('emergency_address') }}"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 uppercase @error('emergency_address') border-red-500 @enderror" required>
+                            @error('emergency_address')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>
 
-                <!-- 13) Reasons for Applying -->
+                <!-- 8) Reasons for Applying -->
                 <div class="border-2 border-gray-300 p-6 rounded-lg">
-                    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">13) Reasons for Applying</h3>
-                    
-                    <p class="text-sm text-gray-700 mb-4">State reasons why you are applying for accommodation on campus:</p>
-                    
-                    <textarea name="reasons" rows="4" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800" required>{{ old('reasons') }}</textarea>
-                    
+                    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">8) Reasons for Applying</h3>
+
+                    <p class="text-sm text-gray-700 mb-2 mt-4">
+                        State reasons why you are applying for accommodation on campus: <span class="text-red-600">*</span>
+                    </p>
+                    <textarea name="reasons" rows="4"
+                              class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 @error('reasons') border-red-500 @enderror"
+                              required>{{ old('reasons') }}</textarea>
+                    @error('reasons')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+
                     <!-- Disability Checkbox -->
                     <div class="mt-4 p-4 bg-gray-50 rounded-lg">
                         <label class="flex items-center">
-                            <input type="checkbox" name="has_disability" value="1" class="rounded border-gray-300 text-red-800 focus:ring-red-800">
+                            <input type="checkbox" name="has_disability" value="1" class="rounded border-gray-300 text-red-800 focus:ring-red-800"
+                                   {{ old('has_disability') ? 'checked' : '' }}>
                             <span class="ml-2 text-gray-700">I have a disability (Medical certificate will be required)</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Medical Certificate Upload (shown only if disability checked via JavaScript) -->
-                <div id="medical_certificate_section" class="border-2 border-gray-300 p-6 rounded-lg hidden">
+                <!-- Medical Certificate Upload (shown only if disability checked) -->
+                <div id="medical_certificate_section" class="border-2 border-gray-300 p-6 rounded-lg {{ old('has_disability') ? '' : 'hidden' }}">
                     <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">Medical Certificate</h3>
-                    
+
                     <div class="mt-4">
                         <label class="block text-sm font-bold text-gray-700 mb-2">Upload Medical Certificate:</label>
                         <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-red-800 transition">
@@ -325,19 +365,21 @@
                     </div>
                 </div>
 
-                <!-- 15) Regulations/Clearance -->
+                <!-- 9) Regulations/Clearance -->
                 <div class="border-2 border-gray-300 p-6 rounded-lg">
-                    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">15) Regulations/Clearance</h3>
-                    
+                    <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">9) Regulations/Clearance</h3>
+
                     <p class="text-sm text-gray-700 mb-4">Have you ever received a warning from Student Welfare regarding Residence Regulations/Clearance? (To be verified by the office):</p>
-                    
+
                     <div class="flex space-x-6">
                         <label class="flex items-center">
-                            <input type="radio" name="previous_warning" value="yes" class="text-red-800 focus:ring-red-800">
+                            <input type="radio" name="previous_warning" value="yes" class="text-red-800 focus:ring-red-800"
+                                   {{ old('previous_warning') == 'yes' ? 'checked' : '' }}>
                             <span class="ml-2">Yes</span>
                         </label>
                         <label class="flex items-center">
-                            <input type="radio" name="previous_warning" value="no" class="text-red-800 focus:ring-red-800" checked>
+                            <input type="radio" name="previous_warning" value="no" class="text-red-800 focus:ring-red-800"
+                                   {{ old('previous_warning', 'no') == 'no' ? 'checked' : '' }}>
                             <span class="ml-2">No</span>
                         </label>
                     </div>
@@ -356,13 +398,18 @@
                 <!-- Declaration and Signature -->
                 <div class="border-2 border-gray-300 p-6 rounded-lg">
                     <h3 class="text-xl font-bold bg-red-800 text-white -mt-8 -ml-2 px-4 py-2 rounded-t-lg inline-block">Declaration and Signature</h3>
-                    
+
                     <p class="text-sm text-gray-700 mt-4">I confirm that the information I have provided in this application for accommodation is complete and correct to the best of my knowledge.</p>
-                    
+
                     <div class="mt-4">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Enter your Student ID number to validate this declaration:</label>
-                        <input type="text" name="declaration_student_id" value="{{ old('declaration_student_id') }}" 
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800" required>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            Enter your Student ID number to validate this declaration: <span class="text-red-600">*</span>
+                        </label>
+                        <input type="text" name="declaration_student_id" value="{{ old('declaration_student_id') }}"
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-red-800 focus:ring-red-800 @error('declaration_student_id') border-red-500 @enderror" required>
+                        @error('declaration_student_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
@@ -381,27 +428,20 @@
 </div>
 
 <script>
-    // Show/hide medical certificate section based on disability checkbox
     document.addEventListener('DOMContentLoaded', function() {
         const disabilityCheckbox = document.querySelector('input[name="has_disability"]');
         if (disabilityCheckbox) {
             disabilityCheckbox.addEventListener('change', function() {
                 const medicalSection = document.getElementById('medical_certificate_section');
-                if (this.checked) {
-                    medicalSection.classList.remove('hidden');
-                } else {
-                    medicalSection.classList.add('hidden');
-                }
+                medicalSection.classList.toggle('hidden', !this.checked);
             });
         }
 
-        // File upload preview
         const medicalFile = document.getElementById('medical_certificate');
         if (medicalFile) {
-            medicalFile.addEventListener('change', function(e) {
+            medicalFile.addEventListener('change', function() {
                 const preview = document.getElementById('medical_preview');
                 const nameSpan = document.getElementById('medical_name');
-                
                 if (this.files && this.files[0]) {
                     nameSpan.textContent = this.files[0].name;
                     preview.classList.remove('hidden');
