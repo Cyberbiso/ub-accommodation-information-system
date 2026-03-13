@@ -169,13 +169,14 @@ class StudentController extends Controller
         $formData = $request->except(['_token', 'medical_certificate']);
 
         Application::create([
-            'student_id'         => Auth::id(),
-            'accommodation_id'   => null,
-            'status'             => 'pending',
-            'special_requirements' => $request->reasons,
-            'has_disability'     => $request->boolean('has_disability'),
-            'medical_certificate' => $medicalCertPath,
-            'form_data'          => $formData,
+            'student_id'             => Auth::id(),
+            'accommodation_id'       => null,
+            'preferred_move_in_date' => null,
+            'status'                 => 'pending',
+            'special_requirements'   => $request->reasons,
+            'has_disability'         => $request->boolean('has_disability'),
+            'medical_certificate'    => $medicalCertPath,
+            'form_data'              => $formData,
         ]);
 
         return redirect()->route('student.applications')
