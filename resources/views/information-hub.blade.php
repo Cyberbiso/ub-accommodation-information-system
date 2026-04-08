@@ -185,6 +185,12 @@
         
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             @forelse($recentResources as $resource)
+            @php
+                $resourceUrl = ($resource->file_path || $resource->external_link)
+                    ? route('information.resources.download', $resource)
+                    : null;
+                $resourceActionLabel = in_array($resource->type, ['link', 'video'], true) ? 'Open Resource' : 'Download';
+            @endphp
             <div class="bg-gray-50 rounded-lg p-6 hover:shadow-md transition">
                 <div class="text-3xl text-red-800 mb-3">
                     @if($resource->type == 'document')
@@ -199,9 +205,13 @@
                 </div>
                 <h3 class="font-semibold mb-1">{{ $resource->title }}</h3>
                 <p class="text-sm text-gray-600 mb-3">{{ Str::limit($resource->description, 60) }}</p>
-                <a href="#" class="text-red-800 hover:text-red-900 text-sm font-medium">
-                    Download <i class="fas fa-download ml-1"></i>
-                </a>
+                @if($resourceUrl)
+                    <a href="{{ $resourceUrl }}" class="text-red-800 hover:text-red-900 text-sm font-medium">
+                        {{ $resourceActionLabel }} <i class="fas fa-arrow-up-right-from-square ml-1"></i>
+                    </a>
+                @else
+                    <p class="text-sm text-gray-400">Resource file not available yet.</p>
+                @endif
             </div>
             @empty
             <div class="col-span-4 text-center py-8 text-gray-500">

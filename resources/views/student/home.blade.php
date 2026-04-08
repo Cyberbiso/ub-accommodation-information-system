@@ -97,7 +97,7 @@
                         @else
                             <div class="text-center py-8">
                                 <p class="text-gray-600 mb-4">No applications yet</p>
-                                <a href="{{ route('student.accommodations.apply.form') }}" 
+                                <a href="{{ route('student.apply.form') }}" 
                                    class="inline-block bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition">
                                     Apply Now
                                 </a>
@@ -186,7 +186,7 @@
                             </div>
                         @endif
                         <div class="text-right mt-2">
-                            <a href="{{ route('information.notice-board') }}" class="text-sm text-red-800 hover:underline">
+                            <a href="{{ route('student.applications') }}" class="text-sm text-red-800 hover:underline">
                                 View all →
                             </a>
                         </div>

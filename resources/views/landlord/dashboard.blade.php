@@ -10,244 +10,156 @@
 
 @section('content')
 <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Welcome Card -->
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900">Welcome back, {{ Auth::user()->name }}!</h3>
-                <p class="text-gray-600 mt-1">Manage your properties, viewing requests, and listings from your dashboard.</p>
-            </div>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-red-100 rounded-md p-3">
-                            <i class="fas fa-building text-red-800 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Properties</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['total_properties'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-green-100 rounded-md p-3">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Active Listings</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['active_properties'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-yellow-100 rounded-md p-3">
-                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Pending Approvals</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['pending_approvals'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-blue-100 rounded-md p-3">
-                            <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Viewing Requests</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['total_viewing_requests'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <a href="{{ route('landlord.properties.create') }}" class="app-card bg-white p-6 hover:shadow-lg transition flex items-center justify-between group">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-white rounded-2xl shadow overflow-hidden">
+            <div class="p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div>
-                    <h3 class="font-semibold text-lg text-gray-900">Add New Property</h3>
-                    <p class="text-gray-600 text-sm">List a new property for students</p>
+                    <p class="text-sm uppercase tracking-[0.2em] text-red-700 font-semibold">Landlord Portal</p>
+                    <h1 class="text-3xl font-bold text-gray-900 mt-2">{{ Auth::user()->company_name ?? Auth::user()->name }}</h1>
+                    <p class="text-gray-600 mt-2">Advertise verified accommodation, manage viewing requests, and track confirmed student bookings.</p>
                 </div>
-                <i class="fas fa-plus-circle text-red-800 text-2xl group-hover:scale-110 transition"></i>
+                <div class="flex flex-wrap gap-3">
+                    <span class="px-4 py-2 rounded-full text-sm font-semibold {{ Auth::user()->isVerifiedLandlord() ? 'bg-green-100 text-green-800' : (Auth::user()->landlord_verification_status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
+                        Verification: {{ ucfirst(str_replace('_', ' ', Auth::user()->landlord_verification_status)) }}
+                    </span>
+                    <a href="{{ route('landlord.verification') }}" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50">Open verification</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4">
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Properties</p>
+                <p class="text-2xl font-bold text-gray-900 mt-2">{{ $stats['total_properties'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Active</p>
+                <p class="text-2xl font-bold text-green-600 mt-2">{{ $stats['active_properties'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Units Available</p>
+                <p class="text-2xl font-bold text-blue-600 mt-2">{{ $stats['available_units'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Pending Reviews</p>
+                <p class="text-2xl font-bold text-amber-600 mt-2">{{ $stats['pending_reviews'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Viewings</p>
+                <p class="text-2xl font-bold text-gray-900 mt-2">{{ $stats['total_viewing_requests'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Pending Viewings</p>
+                <p class="text-2xl font-bold text-amber-600 mt-2">{{ $stats['pending_viewings'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Enquiries</p>
+                <p class="text-2xl font-bold text-indigo-600 mt-2">{{ $stats['pending_enquiries'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Confirmed Bookings</p>
+                <p class="text-2xl font-bold text-purple-600 mt-2">{{ $stats['confirmed_bookings'] }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <a href="{{ route('landlord.properties.create') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Listings</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Advertise a property</h3>
+                <p class="text-gray-600 mt-2 text-sm">Add location, amenities, transport routes, and GPS coordinates.</p>
             </a>
-            
-            <a href="{{ route('landlord.viewing-requests') }}" class="app-card bg-white p-6 hover:shadow-lg transition flex items-center justify-between group">
-                <div>
-                    <h3 class="font-semibold text-lg text-gray-900">Manage Viewings</h3>
-                    <p class="text-gray-600 text-sm">{{ $stats['pending_viewings'] }} pending requests</p>
-                </div>
-                <i class="fas fa-calendar-alt text-red-800 text-2xl group-hover:scale-110 transition"></i>
+            <a href="{{ route('landlord.viewing-requests') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Students</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Manage viewings</h3>
+                <p class="text-gray-600 mt-2 text-sm">Approve or decline pending requests.</p>
+            </a>
+            <a href="{{ route('landlord.bookings') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Bookings</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Track confirmed stays</h3>
+                <p class="text-gray-600 mt-2 text-sm">Review selected accommodation and payment outcomes.</p>
+            </a>
+            <a href="{{ route('landlord.enquiries') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Messages</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Respond to enquiries</h3>
+                <p class="text-gray-600 mt-2 text-sm">Reply to student questions about your listings.</p>
             </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Recent Properties -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">Your Properties</h3>
-                    <a href="{{ route('landlord.properties') }}" class="text-sm app-link">View All</a>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="xl:col-span-2 bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-900">Latest Properties</h3>
+                    <a href="{{ route('landlord.properties') }}" class="text-sm text-red-800 hover:underline">View all</a>
                 </div>
-                <div class="p-6">
-                    @if($recent_properties->count() > 0)
-                        <div class="space-y-4">
-                            @foreach($recent_properties as $property)
-                            <div class="flex justify-between items-center border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                                <div>
-                                    <p class="font-medium text-gray-900">{{ $property->title }}</p>
-                                    <p class="text-sm text-gray-600">{{ $property->city }} • P{{ number_format($property->monthly_rent, 2) }}/month</p>
-                                </div>
-                                <span class="app-badge 
-                                    @if($property->is_approved) app-badge-success
-                                    @else app-badge-warning @endif">
-                                    {{ $property->is_approved ? 'Approved' : 'Pending' }}
-                                </span>
-                            </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-gray-600 text-center py-4">No properties listed yet.</p>
-                        <div class="text-center">
-                            <a href="{{ route('landlord.properties.create') }}" class="app-button inline-block">
-                                Add Your First Property
-                            </a>
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Recent Viewing Requests -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">Recent Viewing Requests</h3>
-                    <a href="{{ route('landlord.viewing-requests') }}" class="text-sm app-link">View All</a>
-                </div>
-                <div class="p-6">
-                    @if($recent_requests->count() > 0)
-                        <div class="space-y-4">
-                            @foreach($recent_requests as $request)
-                            <div class="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="font-medium text-gray-900">{{ $request->property->title }}</p>
-                                        <p class="text-sm text-gray-600">Student: {{ $request->student->name }}</p>
-                                        <p class="text-xs text-gray-500">Preferred: {{ $request->preferred_date->format('M d, Y h:i A') }}</p>
-                                    </div>
-                                    <span class="app-badge 
-                                        @if($request->status == 'pending') app-badge-warning
-                                        @elseif($request->status == 'approved') app-badge-success
-                                        @elseif($request->status == 'rejected') app-badge-danger
-                                        @else app-badge-info @endif">
-                                        {{ ucfirst($request->status) }}
+                <div class="divide-y divide-gray-100">
+                    @forelse($recent_properties as $property)
+                        <div class="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <p class="font-semibold text-gray-900">{{ $property->title }}</p>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $property->review_status === 'approved' ? 'bg-green-100 text-green-800' : ($property->review_status === 'changes_requested' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                        {{ ucfirst(str_replace('_', ' ', $property->review_status)) }}
                                     </span>
                                 </div>
-                                @if($request->status == 'pending')
-                                <div class="mt-2 flex space-x-2">
-                                    <button onclick="openScheduleModal({{ $request->id }})" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">
-                                        Approve
-                                    </button>
-                                    <button onclick="openRejectModal({{ $request->id }})" class="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">
-                                        Reject
-                                    </button>
-                                </div>
-                                @endif
+                                <p class="text-sm text-gray-600 mt-1">{{ $property->city }} • P{{ number_format($property->monthly_rent, 2) }}/month</p>
                             </div>
-                            @endforeach
+                            <div class="flex items-center gap-3">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $property->is_available ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
+                                    {{ $property->available_units }} unit{{ $property->available_units > 1 ? 's' : '' }}
+                                </span>
+                                <a href="{{ route('landlord.properties.edit', $property) }}" class="text-sm text-red-800 hover:underline">Edit</a>
+                            </div>
                         </div>
-                    @else
-                        <p class="text-gray-600 text-center py-4">No viewing requests yet.</p>
-                    @endif
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No properties listed yet.</div>
+                    @endforelse
                 </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-900">Recent Bookings</h3>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    @forelse($recent_bookings as $booking)
+                        <div class="p-5">
+                            <p class="font-semibold text-gray-900">{{ $booking->property->title }}</p>
+                            <p class="text-sm text-gray-600 mt-1">{{ $booking->student->name }} • {{ $booking->booking_reference }}</p>
+                            <span class="inline-flex mt-3 px-3 py-1 rounded-full text-xs font-semibold {{ $booking->status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
+                            </span>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No bookings yet.</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-semibold text-gray-900">Recent Enquiries</h3>
+                <a href="{{ route('landlord.enquiries') }}" class="text-sm text-red-800 hover:underline">View all</a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                @forelse($recent_enquiries as $enquiry)
+                    <div class="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <p class="font-semibold text-gray-900">{{ $enquiry->subject }}</p>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $enquiry->status === 'responded' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                    {{ ucfirst($enquiry->status) }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">{{ $enquiry->student->name }} • {{ $enquiry->property->title }}</p>
+                        </div>
+                        <a href="{{ route('landlord.enquiries') }}" class="border border-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Respond</a>
+                    </div>
+                @empty
+                    <div class="p-8 text-center text-gray-500">No enquiries yet.</div>
+                @endforelse
             </div>
         </div>
     </div>
 </div>
-
-<!-- Schedule Modal (hidden by default) -->
-<div id="scheduleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-8 max-w-md w-full">
-        <h3 class="text-xl font-bold mb-4">Schedule Viewing</h3>
-        <form id="scheduleForm" method="POST">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Select Date & Time</label>
-                <input type="datetime-local" name="scheduled_date" class="w-full px-3 py-2 border rounded-lg" required>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Message to Student (Optional)</label>
-                <textarea name="message" rows="3" class="w-full px-3 py-2 border rounded-lg"></textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
-                <button type="submit" class="app-button">Confirm</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Reject Modal -->
-<div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-8 max-w-md w-full">
-        <h3 class="text-xl font-bold mb-4">Reject Viewing Request</h3>
-        <form id="rejectForm" method="POST">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Rejection</label>
-                <textarea name="reason" rows="3" class="w-full px-3 py-2 border rounded-lg" required></textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeRejectModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
-                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Reject Request</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-function openScheduleModal(requestId) {
-    document.getElementById('scheduleModal').classList.remove('hidden');
-    document.getElementById('scheduleModal').classList.add('flex');
-    document.getElementById('scheduleForm').action = '/landlord/viewing-requests/' + requestId + '/approve';
-}
-
-function closeScheduleModal() {
-    document.getElementById('scheduleModal').classList.add('hidden');
-    document.getElementById('scheduleModal').classList.remove('flex');
-}
-
-function openRejectModal(requestId) {
-    document.getElementById('rejectModal').classList.remove('hidden');
-    document.getElementById('rejectModal').classList.add('flex');
-    document.getElementById('rejectForm').action = '/landlord/viewing-requests/' + requestId + '/reject';
-}
-
-function closeRejectModal() {
-    document.getElementById('rejectModal').classList.add('hidden');
-    document.getElementById('rejectModal').classList.remove('flex');
-}
-</script>
 @endsection

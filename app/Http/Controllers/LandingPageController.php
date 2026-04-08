@@ -26,14 +26,13 @@ class LandingPageController extends Controller
     // Get statistics for the landing page
         $stats = [
             'on_campus_rooms' => Accommodation::where('is_available', true)->count(),
-            'off_campus_properties' => Property::where('is_approved', true)->where('is_available', true)->count(),
-            'active_landlords' => \App\Models\User::where('role', 'landlord')->count(),
+            'off_campus_properties' => Property::live()->count(),
+            'active_landlords' => \App\Models\User::where('role', 'landlord')->where('landlord_verification_status', 'verified')->count(),
             'happy_students' => \App\Models\User::where('role', 'student')->count(),
         ];
 
         // Get some featured properties (random for demo)
-        $featuredProperties = Property::where('is_approved', true)
-            ->where('is_available', true)
+        $featuredProperties = Property::live()
             ->inRandomOrder()
             ->take(3)
             ->get();

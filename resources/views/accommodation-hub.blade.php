@@ -84,9 +84,9 @@
                         <i class="fas fa-map-marker-alt text-red-800 mr-2"></i>
                         <span>Block {{ $accommodation->block }}, Floor {{ $accommodation->floor }}</span>
                     </div>
-                 <a href="{{ url('/accommodations/' . $accommodation->id) }}" class="inline-block w-full text-center bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition">
-    View Details
-</a>
+                    <a href="{{ route('accommodations.show', $accommodation) }}" class="inline-block w-full text-center bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition">
+                        View Details
+                    </a>
                 </div>
             </div>
             @endforeach
@@ -163,31 +163,28 @@
         </div>
         @endif
 
-       @auth
-    @if(Auth::user()->isStudent())
-        <!-- If user is logged in as student, go to student home -->
-        <div class="text-center">
-            <a href="{{ route('student.home') }}" class="inline-block bg-red-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
-                <i class="fas fa-list mr-2"></i>View Your Applications
-            </a>
-            <p class="text-sm text-gray-600 mt-2">Already applied? Check your application status here.</p>
-        </div>
-    @else
-        <!-- If logged in but not student (landlord/welfare/admin) -->
-        <div class="text-center">
-            <a href="{{ route('properties.index') }}" class="inline-block bg-red-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
-                Browse All Off-Campus Properties
-            </a>
-        </div>
-    @endif
-@else
-    <!-- If not logged in, go to public properties page -->
-    <div class="text-center">
-        <a href="{{ route('properties.index') }}" class="inline-block bg-red-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
-            Browse All Off-Campus Properties
-        </a>
-    </div>
-@endauth
+        @auth
+            @if(Auth::user()->isStudent())
+                <div class="text-center">
+                    <a href="{{ route('student.home') }}" class="inline-block bg-red-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
+                        <i class="fas fa-list mr-2"></i>View Your Applications
+                    </a>
+                    <p class="text-sm text-gray-600 mt-2">Already applied? Check your application status here.</p>
+                </div>
+            @else
+                <div class="text-center">
+                    <a href="{{ route('properties.index') }}" class="inline-block bg-red-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
+                        Browse All Off-Campus Properties
+                    </a>
+                </div>
+            @endif
+        @else
+            <div class="text-center">
+                <a href="{{ route('properties.index') }}" class="inline-block bg-red-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
+                    Browse All Off-Campus Properties
+                </a>
+            </div>
+        @endauth
   </div>
 </div>
 

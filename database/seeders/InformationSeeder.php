@@ -156,5 +156,48 @@ class InformationSeeder extends Seeder
         foreach ($checklist as $item) {
             OnboardingChecklist::create($item);
         }
+
+        $resources = [
+            [
+                'title' => 'UB International Student Guide',
+                'description' => 'A quick-start guide covering arrival planning, orientation, and essential student services.',
+                'type' => 'guide',
+                'external_link' => 'https://www.ub.bw/',
+                'tags' => ['arrival', 'orientation', 'student services'],
+                'category' => 'onboarding',
+                'is_featured' => true,
+            ],
+            [
+                'title' => 'Admissions and Registration Support',
+                'description' => 'Useful admissions and registration information for new and returning students.',
+                'type' => 'link',
+                'external_link' => 'https://www.ub.bw/admissions',
+                'tags' => ['registration', 'admissions'],
+                'category' => 'academics',
+                'is_featured' => true,
+            ],
+            [
+                'title' => 'Student Welfare Contact Directory',
+                'description' => 'Key welfare and support contacts for accommodation, counseling, and student wellbeing.',
+                'type' => 'contact',
+                'external_link' => 'https://www.ub.bw/',
+                'tags' => ['welfare', 'support', 'contacts'],
+                'category' => 'support',
+                'is_featured' => false,
+            ],
+            [
+                'title' => 'Visa and Permit Checklist',
+                'description' => 'A reference checklist for common immigration documents and deadlines.',
+                'type' => 'faq',
+                'external_link' => 'https://www.ub.bw/',
+                'tags' => ['visa', 'permits', 'immigration'],
+                'category' => 'visa',
+                'is_featured' => true,
+            ],
+        ];
+
+        foreach ($resources as $resource) {
+            Resource::create($resource);
+        }
     }
 }

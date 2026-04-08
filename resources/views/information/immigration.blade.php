@@ -48,7 +48,7 @@
             <div class="mt-4">
                 <h4 class="font-medium mb-2">Required Documents:</h4>
                 <ul class="list-disc list-inside space-y-1 text-gray-600">
-                    @foreach(json_decode($req->required_documents) as $doc)
+                    @foreach($req->required_documents ?? [] as $doc)
                     <li>{{ $doc }}</li>
                     @endforeach
                 </ul>

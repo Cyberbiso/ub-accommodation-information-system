@@ -3,280 +3,183 @@
 @section('title', 'Admin Dashboard')
 
 @section('header')
-    <h2 class="font-semibold text-xl text-white leading-tight">
-        Admin Dashboard
-    </h2>
+    <h2 class="font-semibold text-xl text-white leading-tight">Admin Dashboard</h2>
 @endsection
 
 @section('content')
 <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Welcome Card -->
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900">Welcome, {{ Auth::user()->name }}!</h3>
-                <p class="text-gray-600 mt-1">System overview and management dashboard.</p>
-            </div>
-        </div>
-
-        <!-- Statistics Cards - Row 1 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-red-100 rounded-md p-3">
-                            <i class="fas fa-users text-red-800 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Users</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['total_users'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-blue-100 rounded-md p-3">
-                            <i class="fas fa-user-graduate text-blue-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Students</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['total_students'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-green-100 rounded-md p-3">
-                            <i class="fas fa-home text-green-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Landlords</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['total_landlords'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-purple-100 rounded-md p-3">
-                            <i class="fas fa-building text-purple-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Properties</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['total_properties'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistics Cards - Row 2 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-yellow-100 rounded-md p-3">
-                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Pending Properties</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['pending_properties'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-indigo-100 rounded-md p-3">
-                            <i class="fas fa-check-circle text-indigo-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Approved Props</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['approved_properties'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-pink-100 rounded-md p-3">
-                            <i class="fas fa-file-alt text-pink-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Applications</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">{{ $stats['total_applications'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-green-100 rounded-md p-3">
-                            <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                                <dd class="text-2xl font-semibold text-gray-900">P{{ number_format($stats['total_payments'], 2) }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <a href="{{ route('admin.users') }}" class="app-card bg-white p-6 hover:shadow-lg transition flex items-center justify-between group">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-white rounded-2xl shadow overflow-hidden">
+            <div class="p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div>
-                    <h3 class="font-semibold text-lg text-gray-900">Manage Users</h3>
-                    <p class="text-gray-600 text-sm">View and manage all users</p>
+                    <p class="text-sm uppercase tracking-[0.2em] text-red-700 font-semibold">Administration</p>
+                    <h1 class="text-3xl font-bold text-gray-900 mt-2">Govern the accommodation portal</h1>
+                    <p class="text-gray-600 mt-2 max-w-3xl">Review landlord verification packages, moderate property listings, manage users, and publish announcements for students, landlords, welfare, and admins.</p>
                 </div>
-                <i class="fas fa-users-cog text-red-800 text-2xl group-hover:scale-110 transition"></i>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ route('admin.landlords.verifications') }}" class="px-4 py-3 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition">Review landlords</a>
+                    <a href="{{ route('admin.properties.pending') }}" class="px-4 py-3 rounded-lg bg-red-800 text-white font-semibold hover:bg-red-900 transition">Review properties</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4">
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Users</p>
+                <p class="text-2xl font-bold text-gray-900 mt-2">{{ $stats['total_users'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Active</p>
+                <p class="text-2xl font-bold text-green-600 mt-2">{{ $stats['active_users'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Suspended</p>
+                <p class="text-2xl font-bold text-red-700 mt-2">{{ $stats['inactive_users'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Landlord Reviews</p>
+                <p class="text-2xl font-bold text-amber-600 mt-2">{{ $stats['pending_landlord_verifications'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Verified Landlords</p>
+                <p class="text-2xl font-bold text-blue-600 mt-2">{{ $stats['verified_landlords'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Property Queue</p>
+                <p class="text-2xl font-bold text-amber-600 mt-2">{{ $stats['pending_properties'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Announcements</p>
+                <p class="text-2xl font-bold text-indigo-600 mt-2">{{ $stats['total_announcements'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Revenue</p>
+                <p class="text-2xl font-bold text-gray-900 mt-2">P{{ number_format($stats['total_payments'], 2) }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <a href="{{ route('admin.users') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Users</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Manage accounts</h3>
+                <p class="text-gray-600 mt-2 text-sm">Add, edit, deactivate, or delete portal users.</p>
             </a>
-            
-            <a href="{{ route('admin.properties.pending') }}" class="app-card bg-white p-6 hover:shadow-lg transition flex items-center justify-between group">
-                <div>
-                    <h3 class="font-semibold text-lg text-gray-900">Review Properties</h3>
-                    <p class="text-gray-600 text-sm">{{ $stats['pending_properties'] }} pending approvals</p>
-                </div>
-                <i class="fas fa-clipboard-check text-red-800 text-2xl group-hover:scale-110 transition"></i>
+            <a href="{{ route('admin.landlords.verifications') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Verification</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Verify landlords</h3>
+                <p class="text-gray-600 mt-2 text-sm">Approve, reject, or request more information.</p>
             </a>
-            
-            <a href="{{ route('information.index') }}" class="app-card bg-white p-6 hover:shadow-lg transition flex items-center justify-between group">
-                <div>
-                    <h3 class="font-semibold text-lg text-gray-900">Manage Content</h3>
-                    <p class="text-gray-600 text-sm">Update information pages</p>
-                </div>
-                <i class="fas fa-edit text-red-800 text-2xl group-hover:scale-110 transition"></i>
+            <a href="{{ route('admin.properties.pending') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Listings</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Moderate properties</h3>
+                <p class="text-gray-600 mt-2 text-sm">Review new listings before they go live.</p>
+            </a>
+            <a href="{{ route('admin.announcements') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Comms</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Publish announcements</h3>
+                <p class="text-gray-600 mt-2 text-sm">Target students, landlords, welfare, or everyone.</p>
             </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Recent Users -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">Recent Users</h3>
-                    <a href="{{ route('admin.users') }}" class="text-sm app-link">View All</a>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="xl:col-span-2 bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-900">Pending Landlord Verifications</h3>
+                    <a href="{{ route('admin.landlords.verifications') }}" class="text-sm text-red-800 hover:underline">Open queue</a>
                 </div>
-                <div class="p-6">
-                    <div class="space-y-4">
-                        @foreach($recent_users as $user)
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                <div class="divide-y divide-gray-100">
+                    @forelse($pendingLandlords as $landlord)
+                        <div class="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div>
-                                <p class="font-medium text-gray-900">{{ $user->name }}</p>
-                                <p class="text-sm text-gray-600">{{ $user->email }}</p>
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <p class="font-semibold text-gray-900">{{ $landlord->company_name ?? $landlord->name }}</p>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $landlord->landlord_verification_status === 'needs_more_info' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        {{ ucfirst(str_replace('_', ' ', $landlord->landlord_verification_status)) }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">{{ $landlord->email }} • Stage: {{ ucfirst(str_replace('_', ' ', $landlord->landlord_verification_stage)) }}</p>
                             </div>
-                            <span class="app-badge 
-                                @if($user->role == 'admin') app-badge-danger
-                                @elseif($user->role == 'welfare') app-badge-warning
-                                @elseif($user->role == 'landlord') app-badge-info
-                                @else app-badge-success @endif">
-                                {{ ucfirst($user->role) }}
-                            </span>
+                            <a href="{{ route('admin.landlords.verifications') }}" class="border border-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Review</a>
                         </div>
-                        @endforeach
-                    </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No landlord verifications waiting right now.</div>
+                    @endforelse
                 </div>
             </div>
 
-            <!-- Pending Property Approvals -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">Pending Approvals</h3>
-                    <a href="{{ route('admin.properties.pending') }}" class="text-sm app-link">View All</a>
+            <div class="bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-900">Recent Announcements</h3>
                 </div>
-                <div class="p-6">
-                    @if($pending_properties->count() > 0)
-                        <div class="space-y-4">
-                            @foreach($pending_properties as $property)
-                            <div class="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="font-medium text-gray-900">{{ $property->title }}</p>
-                                        <p class="text-sm text-gray-600">Landlord: {{ $property->landlord->name }}</p>
-                                        <p class="text-xs text-gray-500">P{{ number_format($property->monthly_rent, 2) }}/month</p>
-                                    </div>
-                                    <div class="flex space-x-2">
-                                        <form action="{{ route('admin.properties.approve', $property) }}" method="POST">
-                                            @csrf
-                                            <button type="submit" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">
-                                                Approve
-                                            </button>
-                                        </form>
-                                        <button onclick="openRejectModal({{ $property->id }})" class="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">
-                                            Reject
-                                        </button>
-                                    </div>
-                                </div>
+                <div class="divide-y divide-gray-100">
+                    @forelse($recentAnnouncements as $announcement)
+                        <div class="p-5">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <p class="font-semibold text-gray-900">{{ $announcement->title }}</p>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $announcement->priority === 'important' ? 'bg-red-100 text-red-800' : ($announcement->priority === 'warning' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800') }}">
+                                    {{ ucfirst($announcement->priority) }}
+                                </span>
                             </div>
-                            @endforeach
+                            <p class="text-sm text-gray-600 mt-2">{{ $announcement->target_role ? ucfirst($announcement->target_role) : 'All users' }}</p>
+                            <p class="text-sm text-gray-700 mt-3">{{ \Illuminate\Support\Str::limit($announcement->content, 120) }}</p>
                         </div>
-                    @else
-                        <p class="text-gray-600 text-center py-4">No pending property approvals.</p>
-                    @endif
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No announcements published yet.</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-900">Pending Property Reviews</h3>
+                    <a href="{{ route('admin.properties.pending') }}" class="text-sm text-red-800 hover:underline">Open queue</a>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    @forelse($pendingProperties as $property)
+                        <div class="p-5 flex items-center justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <p class="font-semibold text-gray-900">{{ $property->title }}</p>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $property->review_status === 'changes_requested' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        {{ ucfirst(str_replace('_', ' ', $property->review_status)) }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">{{ $property->landlord->company_name ?? $property->landlord->name }} • P{{ number_format($property->monthly_rent, 2) }}/month</p>
+                            </div>
+                            <a href="{{ route('admin.properties.pending') }}" class="border border-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Review</a>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No property submissions pending review.</div>
+                    @endforelse
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-900">Recent Users</h3>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    @forelse($recentUsers as $user)
+                        <div class="p-5 flex items-center justify-between gap-4">
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ $user->name }}</p>
+                                <p class="text-sm text-gray-600 mt-1">{{ $user->email }}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $user->is_active ? 'Active' : 'Inactive' }}
+                                </span>
+                                <p class="text-xs text-gray-500 mt-2">{{ ucfirst($user->role) }}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No users found.</div>
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Reject Modal -->
-<div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-8 max-w-md w-full">
-        <h3 class="text-xl font-bold mb-4">Reject Property</h3>
-        <form id="rejectForm" method="POST">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Rejection</label>
-                <textarea name="reason" rows="3" class="w-full px-3 py-2 border rounded-lg" required></textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeRejectModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
-                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Reject Property</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-function openRejectModal(propertyId) {
-    document.getElementById('rejectModal').classList.remove('hidden');
-    document.getElementById('rejectModal').classList.add('flex');
-    document.getElementById('rejectForm').action = '/admin/properties/' + propertyId + '/reject';
-}
-
-function closeRejectModal() {
-    document.getElementById('rejectModal').classList.add('hidden');
-    document.getElementById('rejectModal').classList.remove('flex');
-}
-</script>
 @endsection

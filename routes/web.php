@@ -10,6 +10,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InformationController;
 use App\Http\Controllers\AccommodationHubController;
 use App\Http\Controllers\InformationHubController;
+use App\Http\Controllers\NotificationController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +42,7 @@ Route::get('/information-hub', [InformationHubController::class, 'index'])->name
 // ACCOMMODATION ROUTES (Public Browse)
 // ==========================================
 Route::get('/accommodations', [AccommodationHubController::class, 'onCampus'])->name('accommodations.index');
+Route::get('/accommodations/{accommodation}', [AccommodationHubController::class, 'showAccommodation'])->name('accommodations.show');
 Route::get('/properties', [AccommodationHubController::class, 'offCampus'])->name('properties.index');
 Route::get('/properties/{property}', [AccommodationHubController::class, 'showProperty'])->name('properties.show');
 
@@ -52,6 +55,7 @@ Route::prefix('information')->name('information.')->group(function () {
     Route::get('/immigration', [InformationHubController::class, 'immigration'])->name('immigration');
     Route::get('/checklist', [InformationHubController::class, 'checklist'])->name('checklist');
     Route::get('/resources', [InformationHubController::class, 'resources'])->name('resources');
+    Route::get('/resources/{resource}/download', [InformationHubController::class, 'downloadResource'])->name('resources.download');
 });
 
 // ==========================================
@@ -62,12 +66,14 @@ require __DIR__.'/auth.php';
 // ==========================================
 // PROTECTED ROUTES (Require Login)
 // ==========================================
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
     
     // Breeze Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     
     // Dashboard Redirect based on role
     Route::get('/dashboard', function () {
@@ -87,7 +93,7 @@ Route::middleware(['auth'])->group(function () {
     // ==========================================
     // STUDENT ROUTES
     // ==========================================
-    Route::prefix('student')->name('student.')->group(function () {
+    Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
         // Home page (new)
         Route::get('/home', [StudentController::class, 'home'])->name('home');
         
@@ -100,9 +106,7 @@ Route::middleware(['auth'])->group(function () {
         
         // Application form routes
         Route::get('/apply', [StudentController::class, 'showApplicationForm'])->name('apply.form');
-
-// Application submission (without accommodation selection)
-Route::post('/applications/store', [StudentController::class, 'storeApplication'])->name('applications.store');
+        Route::post('/applications/store', [StudentController::class, 'storeApplication'])->name('applications.store');
         
         // Apply for specific accommodation (with ID)
         Route::post('/accommodations/{accommodation}/apply', [StudentController::class, 'apply'])->name('accommodations.apply');
@@ -115,19 +119,30 @@ Route::post('/applications/store', [StudentController::class, 'storeApplication'
         Route::get('/properties', [StudentController::class, 'properties'])->name('properties');
         Route::get('/properties/{property}', [StudentController::class, 'showProperty'])->name('properties.show');
         Route::post('/properties/{property}/viewing-request', [StudentController::class, 'requestViewing'])->name('viewing-request');
+        Route::post('/properties/{property}/enquiries', [StudentController::class, 'storePropertyEnquiry'])->name('properties.enquiries.store');
+        Route::post('/properties/{property}/book', [StudentController::class, 'storePropertyBooking'])->name('properties.book');
+        Route::get('/bookings', [StudentController::class, 'bookings'])->name('bookings');
+        Route::get('/enquiries', [StudentController::class, 'enquiries'])->name('enquiries');
         
         // Viewing requests
         Route::get('/viewing-requests', [StudentController::class, 'viewingRequests'])->name('viewing-requests');
         
         // Payments
         Route::get('/payments', [StudentController::class, 'payments'])->name('payments');
+        Route::post('/payments/process', [StudentController::class, 'processPayment'])->name('payments.process');
+
+        // Virtual help desk
+        Route::get('/support', [StudentController::class, 'supportDesk'])->name('support');
+        Route::post('/support', [StudentController::class, 'storeSupportRequest'])->name('support.store');
     });
     
     // ==========================================
     // LANDLORD ROUTES
     // ==========================================
-    Route::prefix('landlord')->name('landlord.')->group(function () {
+    Route::prefix('landlord')->name('landlord.')->middleware('role:landlord')->group(function () {
         Route::get('/dashboard', [LandlordController::class, 'dashboard'])->name('dashboard');
+        Route::get('/verification', [LandlordController::class, 'verification'])->name('verification');
+        Route::post('/verification', [LandlordController::class, 'updateVerification'])->name('verification.update');
         Route::get('/properties', [LandlordController::class, 'properties'])->name('properties');
         Route::get('/properties/create', [LandlordController::class, 'createProperty'])->name('properties.create');
         Route::post('/properties', [LandlordController::class, 'storeProperty'])->name('properties.store');
@@ -137,12 +152,15 @@ Route::post('/applications/store', [StudentController::class, 'storeApplication'
         Route::get('/viewing-requests', [LandlordController::class, 'viewingRequests'])->name('viewing-requests');
         Route::post('/viewing-requests/{viewingRequest}/approve', [LandlordController::class, 'approveRequest'])->name('viewing-requests.approve');
         Route::post('/viewing-requests/{viewingRequest}/reject', [LandlordController::class, 'rejectRequest'])->name('viewing-requests.reject');
+        Route::get('/bookings', [LandlordController::class, 'bookings'])->name('bookings');
+        Route::get('/enquiries', [LandlordController::class, 'enquiries'])->name('enquiries');
+        Route::post('/enquiries/{enquiry}/respond', [LandlordController::class, 'respondToEnquiry'])->name('enquiries.respond');
     });
     
     // ==========================================
     // WELFARE OFFICER ROUTES
     // ==========================================
-    Route::prefix('welfare')->name('welfare.')->group(function () {
+    Route::prefix('welfare')->name('welfare.')->middleware('role:welfare')->group(function () {
         Route::get('/dashboard', [WelfareController::class, 'dashboard'])->name('dashboard');
         
         // Reports routes (used in dashboard cards)
@@ -156,7 +174,11 @@ Route::post('/applications/store', [StudentController::class, 'storeApplication'
         Route::get('/documents/pending', [WelfareController::class, 'pendingDocuments'])->name('documents.pending');
         Route::get('/documents/{document}/verify', [WelfareController::class, 'verifyDocumentForm'])->name('documents.verify');
         Route::post('/documents/{document}/verify', [WelfareController::class, 'verifyDocument'])->name('documents.verify.process');
-        
+
+        // Landlord verification routes
+        Route::get('/landlords/verifications', [WelfareController::class, 'landlordVerifications'])->name('landlords.verifications');
+        Route::post('/landlords/{landlord}/verification', [WelfareController::class, 'processLandlordVerification'])->name('landlords.verifications.process');
+
         // Application routes
         Route::get('/applications', [WelfareController::class, 'applications'])->name('applications');
         Route::get('/applications/{application}', [WelfareController::class, 'showApplication'])->name('applications.show');
@@ -172,20 +194,28 @@ Route::post('/applications/store', [StudentController::class, 'storeApplication'
         
         // Filter route for accommodations by block
         Route::get('/accommodations/block/{block}', [WelfareController::class, 'accommodationsByBlock'])->name('accommodations.block');
+
+        // Support desk routes
+        Route::get('/support', [WelfareController::class, 'supportRequests'])->name('support');
+        Route::post('/support/{supportRequest}', [WelfareController::class, 'updateSupportRequest'])->name('support.update');
     });
     
     // ==========================================
     // ADMIN ROUTES
     // ==========================================
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
+        Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
+        Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+        Route::get('/landlords/verifications', [AdminController::class, 'landlordVerifications'])->name('landlords.verifications');
+        Route::post('/landlords/{landlord}/verification', [AdminController::class, 'processLandlordVerification'])->name('landlords.verifications.process');
         Route::get('/properties/pending', [AdminController::class, 'pendingProperties'])->name('properties.pending');
-        Route::post('/properties/{property}/approve', [AdminController::class, 'approveProperty'])->name('properties.approve');
-        Route::post('/properties/{property}/reject', [AdminController::class, 'rejectProperty'])->name('properties.reject');
+        Route::post('/properties/{property}/review', [AdminController::class, 'reviewProperty'])->name('properties.review');
+        Route::get('/announcements', [AdminController::class, 'announcements'])->name('announcements');
+        Route::post('/announcements', [AdminController::class, 'storeAnnouncement'])->name('announcements.store');
+        Route::put('/announcements/{announcement}', [AdminController::class, 'updateAnnouncement'])->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [AdminController::class, 'destroyAnnouncement'])->name('announcements.destroy');
     });
-// TEST ROUTE - REMOVE AFTER TESTING
-Route::post('/test-register', function(Request $request) {
-    dd($request->all()); // This will dump all form data and stop execution
-})->name('test.register');
 });

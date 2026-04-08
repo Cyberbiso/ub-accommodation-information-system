@@ -92,7 +92,7 @@
                         @if($accommodation->facilities)
                             <div class="mb-4">
                                 <div class="flex flex-wrap gap-2">
-                                    @foreach(json_decode($accommodation->facilities) ?? [] as $facility)
+                                    @foreach($accommodation->facilities ?? [] as $facility)
                                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">{{ $facility }}</span>
                                     @endforeach
                                 </div>
@@ -120,4 +120,4 @@
         </div>
     </div>
 </div>
-@endsections
+@endsection

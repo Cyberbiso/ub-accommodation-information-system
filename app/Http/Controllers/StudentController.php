@@ -2,155 +2,147 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Accommodation;
 use App\Models\Application;
-use App\Models\Property;
-use App\Models\ViewingRequest;
 use App\Models\Payment;
+use App\Models\Property;
+use App\Models\PropertyBooking;
+use App\Models\PropertyEnquiry;
+use App\Models\SupportRequest;
+use App\Models\SystemNotification;
+use App\Models\User;
+use App\Models\ViewingRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use RuntimeException;
 
-/**
- * Student Controller
- * 
- * Handles all student functionality in the accommodation system.
- */
 class StudentController extends Controller
 {
-    /**
-     * Student home page - aliases to dashboard
-     */
     public function home()
     {
         return $this->dashboard();
     }
 
-    /**
-     * Display student dashboard with overview of applications, viewings, and payments
-     */
     public function dashboard()
     {
         $student = Auth::user();
-        
-        if (!$student) {
-            return redirect()->route('login');
-        }
-        
+
         $recentApplications = Application::where('student_id', $student->id)
             ->with('accommodation')
             ->latest()
             ->take(5)
             ->get();
-        
+
         $recentViewings = ViewingRequest::where('student_id', $student->id)
             ->with('property')
             ->latest()
             ->take(5)
             ->get();
-        
+
         $recentPayments = Payment::where('student_id', $student->id)
+            ->with('payable')
             ->latest()
             ->take(5)
             ->get();
-        
+
+        $recentBookings = PropertyBooking::where('student_id', $student->id)
+            ->with('property')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $supportRequests = SupportRequest::where('student_id', $student->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $recentEnquiries = PropertyEnquiry::where('student_id', $student->id)
+            ->with(['property', 'landlord'])
+            ->latest()
+            ->take(5)
+            ->get();
+
         $stats = [
             'total_applications' => Application::where('student_id', $student->id)->count(),
-            'pending_applications' => Application::where('student_id', $student->id)
-                ->where('status', 'pending')
-                ->count(),
-            'approved_applications' => Application::where('student_id', $student->id)
-                ->where('status', 'approved')
-                ->count(),
-            'rejected_applications' => Application::where('student_id', $student->id)
-                ->where('status', 'rejected')
-                ->count(),
+            'pending_applications' => Application::where('student_id', $student->id)->where('status', 'pending')->count(),
+            'approved_applications' => Application::where('student_id', $student->id)->where('status', 'approved')->count(),
+            'rejected_applications' => Application::where('student_id', $student->id)->where('status', 'rejected')->count(),
             'total_viewings' => ViewingRequest::where('student_id', $student->id)->count(),
-            'pending_viewings' => ViewingRequest::where('student_id', $student->id)
-                ->where('status', 'pending')
-                ->count(),
-            'approved_viewings' => ViewingRequest::where('student_id', $student->id)
-                ->where('status', 'approved')
-                ->count(),
             'upcoming_viewings' => ViewingRequest::where('student_id', $student->id)
                 ->where('status', 'approved')
                 ->where('scheduled_date', '>=', now())
                 ->count(),
             'total_payments' => Payment::where('student_id', $student->id)->count(),
-            'completed_payments' => Payment::where('student_id', $student->id)
-                ->where('status', 'completed')
-                ->count(),
-            'pending_payments' => Payment::where('student_id', $student->id)
-                ->where('status', 'pending')
-                ->count(),
-            'total_spent' => Payment::where('student_id', $student->id)
-                ->where('status', 'completed')
-                ->sum('amount'),
+            'completed_payments' => Payment::where('student_id', $student->id)->where('status', 'completed')->count(),
+            'pending_payments' => Payment::where('student_id', $student->id)->where('status', 'pending')->count(),
+            'total_spent' => Payment::where('student_id', $student->id)->where('status', 'completed')->sum('amount'),
+            'off_campus_bookings' => PropertyBooking::where('student_id', $student->id)->count(),
+            'open_support_requests' => SupportRequest::where('student_id', $student->id)->whereIn('status', ['open', 'in_progress'])->count(),
+            'property_enquiries' => PropertyEnquiry::where('student_id', $student->id)->count(),
         ];
-        
-        return view('student.dashboard', compact('recentApplications', 'recentViewings', 'recentPayments', 'stats'));
+
+        return view('student.dashboard', compact(
+            'recentApplications',
+            'recentViewings',
+            'recentPayments',
+            'recentBookings',
+            'supportRequests',
+            'recentEnquiries',
+            'stats'
+        ));
     }
 
-    /**
-     * Display all available on-campus accommodations
-     */
     public function accommodations(Request $request)
     {
         $query = Accommodation::where('is_available', true)
             ->whereColumn('current_occupancy', '<', 'capacity');
-        
+
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
-        
+
         if ($request->filled('max_price')) {
             $query->where('monthly_rent', '<=', $request->max_price);
         }
-        
+
         if ($request->filled('block')) {
             $query->where('block', $request->block);
         }
-        
+
         $types = Accommodation::select('type')->distinct()->pluck('type');
         $blocks = Accommodation::select('block')->distinct()->whereNotNull('block')->pluck('block');
-        
         $accommodations = $query->paginate(9);
-        
+
         return view('student.accommodations', compact('accommodations', 'types', 'blocks'));
     }
 
-    /**
-     * Show the accommodation application form
-     */
     public function showApplicationForm()
     {
         return view('student.accommodation-application-form');
     }
 
-    /**
-     * Store a general accommodation application (no specific room pre-selected)
-     */
     public function storeApplication(Request $request)
     {
         $request->validate([
-            'student_id'             => 'required|string|max:20',
-            'surname'                => 'required|string|max:255',
-            'first_name'             => 'required|string|max:255',
-            'gender'                 => 'required|in:Male,Female,Other',
-            'mobile'                 => 'required|string|max:20',
-            'university_email'       => 'required|email|max:255',
+            'student_id' => 'required|string|max:20',
+            'surname' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'gender' => 'required|in:Male,Female,Other',
+            'mobile' => 'required|string|max:20',
+            'university_email' => 'required|email|max:255',
             'preferred_move_in_date' => 'required|date|after:today',
-            'duration_months'        => 'required|integer|in:6,9,12,18,24',
-            'emergency_name'         => 'required|string|max:255',
+            'duration_months' => 'required|integer|in:6,9,12,18,24',
+            'emergency_name' => 'required|string|max:255',
             'emergency_relationship' => 'required|string|max:100',
-            'emergency_telephone'    => 'required|string|max:20',
-            'emergency_address'      => 'required|string|max:500',
-            'reasons'                => 'required|string|max:2000',
+            'emergency_telephone' => 'required|string|max:20',
+            'emergency_address' => 'required|string|max:500',
+            'reasons' => 'required|string|max:2000',
             'declaration_student_id' => 'required|string|max:20',
-            'medical_certificate'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'medical_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
         ]);
 
-        // Block duplicate pending applications
         $existing = Application::where('student_id', Auth::id())
             ->whereIn('status', ['pending', 'waitlisted'])
             ->whereNull('accommodation_id')
@@ -160,48 +152,40 @@ class StudentController extends Controller
             return back()->with('error', 'You already have a pending accommodation application.');
         }
 
-        // Handle medical certificate upload
         $medicalCertPath = null;
         if ($request->hasFile('medical_certificate')) {
             $medicalCertPath = $request->file('medical_certificate')
                 ->store('medical_certificates/' . Auth::id(), 'public');
         }
 
-        // Collect all form fields into form_data JSON
         $formData = $request->except(['_token', 'medical_certificate']);
 
         Application::create([
-            'student_id'             => Auth::id(),
-            'accommodation_id'       => null,
+            'student_id' => Auth::id(),
+            'accommodation_id' => null,
             'preferred_move_in_date' => $request->preferred_move_in_date,
-            'duration_months'        => $request->duration_months,
-            'status'                 => 'pending',
-            'special_requirements'   => $request->reasons,
-            'has_disability'         => $request->boolean('has_disability'),
-            'medical_certificate'    => $medicalCertPath,
-            'form_data'              => $formData,
+            'duration_months' => $request->duration_months,
+            'status' => 'pending',
+            'special_requirements' => $request->reasons,
+            'has_disability' => $request->boolean('has_disability'),
+            'medical_certificate' => $medicalCertPath,
+            'form_data' => $formData,
         ]);
 
         return redirect()->route('student.applications')
-            ->with('success', 'Your accommodation application has been submitted successfully! The Welfare Office will review it shortly.');
+            ->with('success', 'Your accommodation application has been submitted successfully.');
     }
 
-    /**
-     * Show single accommodation details
-     */
     public function showAccommodation(Accommodation $accommodation)
     {
-        if (!$accommodation->is_available || $accommodation->current_occupancy >= $accommodation->capacity) {
+        if (!$accommodation->is_available || !$accommodation->hasSpace()) {
             return redirect()->route('student.accommodations')
                 ->with('error', 'This accommodation is no longer available.');
         }
-        
+
         return view('student.accommodation-show', compact('accommodation'));
     }
 
-    /**
-     * Apply for on-campus accommodation
-     */
     public function apply(Request $request, Accommodation $accommodation)
     {
         $request->validate([
@@ -223,9 +207,7 @@ class StudentController extends Controller
             return back()->with('error', 'You already have a pending application for this accommodation.');
         }
 
-        DB::beginTransaction();
-
-        try {
+        DB::transaction(function () use ($request, $accommodation) {
             $application = Application::create([
                 'student_id' => Auth::id(),
                 'accommodation_id' => $accommodation->id,
@@ -244,135 +226,123 @@ class StudentController extends Controller
                 'status' => 'pending',
                 'payment_method' => 'online',
             ]);
+        });
 
-            DB::commit();
-
-            return redirect()->route('student.applications')
-                ->with('success', 'Application submitted successfully! Please pay the application fee to complete the process.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'There was an error submitting your application. Please try again.');
-        }
+        return redirect()->route('student.applications')
+            ->with('success', 'Application submitted successfully. Please pay the application fee to complete the process.');
     }
 
-    /**
-     * Display student's applications
-     */
     public function applications()
     {
         $applications = Application::where('student_id', Auth::id())
             ->with(['accommodation', 'payment'])
             ->latest()
             ->paginate(10);
-        
+
         return view('student.applications', compact('applications'));
     }
 
-    /**
-     * Show single application details
-     */
     public function showApplication(Application $application)
     {
-        if ($application->student_id !== Auth::id()) {
-            abort(403, 'Unauthorized access.');
-        }
-        
+        abort_unless($application->student_id === Auth::id(), 403);
+
         $application->load(['accommodation', 'payment', 'processor']);
-        
-        return view('student.application-show', compact('application'));
+
+        return view('student.application-details', compact('application'));
     }
 
-    /**
-     * Display off-campus properties
-     */
     public function properties(Request $request)
     {
-        $query = Property::where('is_approved', true)->where('is_available', true);
-        
+        $query = Property::with('landlord')->live();
+
         if ($request->filled('city')) {
             $query->where('city', 'LIKE', '%' . $request->city . '%');
         }
-        
+
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
-        
+
         if ($request->filled('min_price')) {
             $query->where('monthly_rent', '>=', $request->min_price);
         }
-        
+
         if ($request->filled('max_price')) {
             $query->where('monthly_rent', '<=', $request->max_price);
         }
-        
+
         if ($request->filled('bedrooms')) {
             $query->where('bedrooms', '>=', $request->bedrooms);
         }
-        
+
+        if ($request->filled('max_distance')) {
+            $query->where('distance_to_campus_km', '<=', $request->max_distance);
+        }
+
         if ($request->filled('sort')) {
-            switch ($request->sort) {
-                case 'price_asc':
-                    $query->orderBy('monthly_rent', 'asc');
-                    break;
-                case 'price_desc':
-                    $query->orderBy('monthly_rent', 'desc');
-                    break;
-                case 'newest':
-                    $query->latest();
-                    break;
-                case 'nearest':
-                    $query->orderBy('distance_to_campus_km', 'asc');
-                    break;
-                default:
-                    $query->latest();
-            }
+            match ($request->sort) {
+                'price_asc' => $query->orderBy('monthly_rent', 'asc'),
+                'price_desc' => $query->orderBy('monthly_rent', 'desc'),
+                'nearest' => $query->orderBy('distance_to_campus_km', 'asc'),
+                default => $query->latest(),
+            };
         } else {
             $query->latest();
         }
-        
-        $cities = Property::where('is_approved', true)->select('city')->distinct()->pluck('city');
-        $types = Property::where('is_approved', true)->select('type')->distinct()->pluck('type');
-        
+
+        $cities = Property::approved()->select('city')->distinct()->pluck('city');
+        $types = Property::approved()->select('type')->distinct()->pluck('type');
         $properties = $query->paginate(12)->withQueryString();
-        
-        return view('student.properties', compact('properties', 'cities', 'types'));
+        $campus = config('campus');
+
+        return view('student.properties', compact('properties', 'cities', 'types', 'campus'));
     }
 
-    /**
-     * Show single property details
-     */
     public function showProperty(Property $property)
     {
-        if (!$property->is_approved || !$property->is_available) {
-            abort(404, 'Property not found or not available.');
-        }
-        
+        $this->ensureApprovedProperty($property, true);
+
+        $property->load('landlord');
         $landlord = $property->landlord;
-        
-        $existingRequest = null;
-        if (Auth::check()) {
-            $existingRequest = ViewingRequest::where('student_id', Auth::id())
-                ->where('property_id', $property->id)
-                ->first();
-        }
-        
-        return view('student.property-show', compact('property', 'landlord', 'existingRequest'));
+        $existingRequest = ViewingRequest::where('student_id', Auth::id())
+            ->where('property_id', $property->id)
+            ->latest()
+            ->first();
+        $existingBooking = PropertyBooking::where('student_id', Auth::id())
+            ->where('property_id', $property->id)
+            ->whereIn('status', ['pending_payment', 'confirmed'])
+            ->latest()
+            ->first();
+        $existingEnquiry = PropertyEnquiry::where('student_id', Auth::id())
+            ->where('property_id', $property->id)
+            ->latest()
+            ->first();
+        $similarProperties = Property::live()
+            ->where('id', '!=', $property->id)
+            ->where('city', $property->city)
+            ->take(3)
+            ->get();
+        $campus = config('campus');
+
+        return view('student.property-show', compact(
+            'property',
+            'landlord',
+            'existingRequest',
+            'existingBooking',
+            'existingEnquiry',
+            'similarProperties',
+            'campus'
+        ));
     }
 
-    /**
-     * Request a property viewing
-     */
     public function requestViewing(Request $request, Property $property)
     {
+        $this->ensureApprovedProperty($property, true);
+
         $request->validate([
             'preferred_date' => 'required|date|after:today',
             'message' => 'nullable|string|max:500',
         ]);
-
-        if (!$property->is_available) {
-            return back()->with('error', 'This property is not available for viewing.');
-        }
 
         $existingRequest = ViewingRequest::where('student_id', Auth::id())
             ->where('property_id', $property->id)
@@ -392,61 +362,303 @@ class StudentController extends Controller
             'status' => 'pending',
         ]);
 
+        SystemNotification::notifyUser(
+            $property->landlord_id,
+            'New viewing request',
+            Auth::user()->name . ' requested to view ' . $property->title . '.',
+            route('landlord.viewing-requests'),
+            'info',
+            Auth::id()
+        );
+
         return redirect()->route('student.viewing-requests')
-            ->with('success', 'Viewing request sent to landlord. You will be notified when they respond.');
+            ->with('success', 'Viewing request sent to landlord.');
     }
 
-    /**
-     * Display student's viewing requests
-     */
-    public function viewingRequests()
+    public function storePropertyBooking(Request $request, Property $property)
     {
-        $requests = ViewingRequest::where('student_id', Auth::id())
-            ->with(['property', 'landlord'])
+        $this->ensureApprovedProperty($property, true);
+
+        $request->validate([
+            'move_in_date' => 'required|date|after:today',
+            'lease_months' => 'required|integer|min:3|max:24',
+            'occupants' => 'required|integer|min:1|max:8',
+            'special_requests' => 'nullable|string|max:1000',
+        ]);
+
+        $existingBooking = PropertyBooking::where('student_id', Auth::id())
+            ->where('property_id', $property->id)
+            ->whereIn('status', ['pending_payment', 'confirmed'])
+            ->first();
+
+        if ($existingBooking) {
+            return back()->with('error', 'You already have an active booking for this property.');
+        }
+
+        DB::transaction(function () use ($request, $property) {
+            $depositAmount = $property->deposit_amount ?? $property->monthly_rent;
+            $totalAmount = $property->monthly_rent + $depositAmount;
+
+            $booking = PropertyBooking::create([
+                'booking_reference' => 'PB-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6)),
+                'student_id' => Auth::id(),
+                'property_id' => $property->id,
+                'landlord_id' => $property->landlord_id,
+                'status' => 'pending_payment',
+                'move_in_date' => $request->move_in_date,
+                'lease_months' => $request->lease_months,
+                'occupants' => $request->occupants,
+                'special_requests' => $request->special_requests,
+                'quoted_rent' => $property->monthly_rent,
+                'deposit_amount' => $depositAmount,
+                'total_amount' => $totalAmount,
+            ]);
+
+            Payment::create([
+                'student_id' => Auth::id(),
+                'payable_type' => PropertyBooking::class,
+                'payable_id' => $booking->id,
+                'amount' => $totalAmount,
+                'type' => 'rent',
+                'status' => 'pending',
+                'payment_method' => 'online',
+                'payment_details' => [
+                    'property_id' => $property->id,
+                    'booking_reference' => $booking->booking_reference,
+                    'rent_component' => $property->monthly_rent,
+                    'deposit_component' => $depositAmount,
+                ],
+            ]);
+
+            SystemNotification::notifyUser(
+                $property->landlord_id,
+                'New property booking selected',
+                Auth::user()->name . ' selected ' . $property->title . ' and is now proceeding to payment.',
+                route('landlord.bookings'),
+                'info',
+                Auth::id()
+            );
+        });
+
+        return redirect()->route('student.bookings')
+            ->with('success', 'Property selected successfully. Complete payment to confirm your off-campus accommodation.');
+    }
+
+    public function bookings()
+    {
+        $bookings = PropertyBooking::where('student_id', Auth::id())
+            ->with(['property', 'payment'])
             ->latest()
             ->paginate(10);
-        
-        return view('student.viewing-requests', compact('requests'));
+
+        return view('student.bookings', compact('bookings'));
     }
 
-    /**
-     * Display student's payment history
-     */
+    public function viewingRequests(Request $request)
+    {
+        $query = ViewingRequest::where('student_id', Auth::id())
+            ->with(['property', 'landlord'])
+            ->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $viewingRequests = $query->paginate(10)->withQueryString();
+
+        return view('student.viewing-requests', compact('viewingRequests'));
+    }
+
+    public function enquiries(Request $request)
+    {
+        $query = PropertyEnquiry::where('student_id', Auth::id())
+            ->with(['property', 'landlord'])
+            ->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $enquiries = $query->paginate(10)->withQueryString();
+
+        return view('student.enquiries', compact('enquiries'));
+    }
+
+    public function storePropertyEnquiry(Request $request, Property $property)
+    {
+        $this->ensureApprovedProperty($property);
+
+        $validated = $request->validate([
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|max:5000',
+        ]);
+
+        PropertyEnquiry::create([
+            'reference' => 'ENQ-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6)),
+            'student_id' => Auth::id(),
+            'landlord_id' => $property->landlord_id,
+            'property_id' => $property->id,
+            'status' => 'pending',
+            'subject' => $validated['subject'],
+            'message' => $validated['message'],
+        ]);
+
+        SystemNotification::notifyUser(
+            $property->landlord_id,
+            'New property enquiry',
+            Auth::user()->name . ' sent an enquiry about ' . $property->title . '.',
+            route('landlord.enquiries'),
+            'info',
+            Auth::id()
+        );
+
+        return redirect()->route('student.enquiries')
+            ->with('success', 'Your enquiry has been sent to the landlord.');
+    }
+
     public function payments()
     {
         $payments = Payment::where('student_id', Auth::id())
             ->with('payable')
             ->latest()
             ->paginate(10);
-        
+
         $totalPaid = Payment::where('student_id', Auth::id())
             ->where('status', 'completed')
             ->sum('amount');
-        
+
         $pendingPayments = Payment::where('student_id', Auth::id())
             ->where('status', 'pending')
             ->sum('amount');
-        
+
         return view('student.payments', compact('payments', 'totalPaid', 'pendingPayments'));
     }
 
-    /**
-     * Process payment
-     */
     public function processPayment(Request $request)
     {
         $request->validate([
             'payment_id' => 'required|exists:payments,id',
-            'payment_method' => 'required|in:card,bank_transfer',
+            'payment_method' => 'required|in:card,bank_transfer,mobile_money',
         ]);
 
         $payment = Payment::where('id', $request->payment_id)
             ->where('student_id', Auth::id())
+            ->with('payable')
             ->firstOrFail();
 
-        $payment->markAsCompleted('TXN_' . strtoupper(uniqid()));
+        if ($payment->status !== 'pending') {
+            return redirect()->route('student.payments')
+                ->with('error', 'This payment has already been processed.');
+        }
+
+        if ($payment->payable instanceof PropertyBooking && $payment->payable->property->available_units < 1) {
+            return redirect()->route('student.bookings')
+                ->with('error', 'This property is no longer available. Please choose another listing.');
+        }
+
+        try {
+            DB::transaction(function () use ($payment, $request) {
+                $payment->update(['payment_method' => $request->payment_method]);
+                $payment->markAsCompleted('TXN_' . strtoupper(Str::random(10)));
+
+                if ($payment->payable instanceof PropertyBooking) {
+                    if (!$payment->payable->confirm()) {
+                        throw new RuntimeException('property_unavailable');
+                    }
+
+                    SystemNotification::notifyUser(
+                        $payment->payable->landlord_id,
+                        'Booking payment received',
+                        'Payment was completed for booking ' . $payment->payable->booking_reference . '.',
+                        route('landlord.bookings'),
+                        'success',
+                        Auth::id()
+                    );
+                }
+            });
+        } catch (RuntimeException $exception) {
+            if ($exception->getMessage() === 'property_unavailable') {
+                return redirect()->route('student.bookings')
+                    ->with('error', 'This property is no longer available. Please choose another listing.');
+            }
+
+            throw $exception;
+        }
+
+        SystemNotification::notifyUser(
+            Auth::id(),
+            'Payment successful',
+            'Your payment of ' . $payment->formatted_amount . ' was processed successfully.',
+            route('student.payments'),
+            'success',
+            Auth::id()
+        );
 
         return redirect()->route('student.payments')
-            ->with('success', 'Payment processed successfully!');
+            ->with('success', 'Payment processed successfully.');
+    }
+
+    public function supportDesk()
+    {
+        $supportRequests = SupportRequest::where('student_id', Auth::id())
+            ->latest()
+            ->paginate(10);
+
+        $categories = [
+            'immigration',
+            'registration',
+            'accommodation',
+            'finance',
+            'onboarding',
+            'other',
+        ];
+
+        return view('student.support-requests', compact('supportRequests', 'categories'));
+    }
+
+    public function storeSupportRequest(Request $request)
+    {
+        $request->validate([
+            'category' => 'required|in:immigration,registration,accommodation,finance,onboarding,other',
+            'priority' => 'required|in:low,medium,high',
+            'subject' => 'required|string|max:255',
+            'description' => 'required|string|max:5000',
+        ]);
+
+        $assignee = User::where('role', 'welfare')->first();
+
+        SupportRequest::create([
+            'reference' => 'SUP-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6)),
+            'student_id' => Auth::id(),
+            'assigned_to' => $assignee?->id,
+            'category' => $request->category,
+            'priority' => $request->priority,
+            'status' => 'open',
+            'subject' => $request->subject,
+            'description' => $request->description,
+        ]);
+
+        if ($assignee) {
+            SystemNotification::notifyUser(
+                $assignee->id,
+                'New virtual help desk request',
+                Auth::user()->name . ' submitted a new support request.',
+                route('welfare.support'),
+                'warning',
+                Auth::id()
+            );
+        }
+
+        return redirect()->route('student.support')
+            ->with('success', 'Your request has been submitted to the virtual help desk.');
+    }
+
+    private function ensureApprovedProperty(Property $property, bool $requireAvailability = false): void
+    {
+        abort_unless($property->review_status === 'approved' && $property->is_approved, 404);
+
+        if ($requireAvailability) {
+            abort_unless($property->is_available && $property->available_units > 0, 404);
+        }
     }
 }

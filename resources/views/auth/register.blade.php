@@ -4,393 +4,273 @@
 
 @section('content')
 <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 auth-gradient">
-    <div class="max-w-2xl w-full auth-card rounded-xl shadow-2xl p-8">
+    <div class="max-w-4xl w-full auth-card rounded-xl shadow-2xl p-8">
         <div class="text-center mb-8">
             <i class="fas fa-user-plus text-5xl text-red-800 mb-4"></i>
             <h2 class="text-3xl font-bold text-gray-900">Create Account</h2>
-            <p class="text-gray-600 mt-2">Join UB Onboarding System</p>
+            <p class="text-gray-600 mt-2">Student onboarding, verified housing, and support in one portal.</p>
         </div>
 
-        <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" id="registrationForm">
+        <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" id="registrationForm" class="space-y-8">
             @csrf
 
-            <!-- STEP 1: Account Type -->
-            <div class="mb-6 border-b border-gray-200 pb-4">
+            <section class="border-b border-gray-200 pb-6">
                 <h3 class="text-lg font-semibold text-red-800 mb-4">Account Type</h3>
-                <div class="flex space-x-6">
-                    <label class="inline-flex items-center cursor-pointer">
-                        <input type="radio" name="role" value="student" id="role_student"
-                               class="rounded border-gray-300 text-red-800 focus:ring-red-800" checked>
-                        <span class="ml-2 text-gray-700 font-medium">Student</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label class="border rounded-xl p-4 cursor-pointer bg-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-semibold text-gray-900">Student</p>
+                                <p class="text-sm text-gray-600">Apply for accommodation and track onboarding help.</p>
+                            </div>
+                            <input type="radio" name="role" value="student" class="text-red-800 focus:ring-red-800" {{ old('role', 'student') === 'student' ? 'checked' : '' }}>
+                        </div>
                     </label>
-                    <label class="inline-flex items-center cursor-pointer">
-                        <input type="radio" name="role" value="landlord" id="role_landlord"
-                               class="rounded border-gray-300 text-red-800 focus:ring-red-800">
-                        <span class="ml-2 text-gray-700 font-medium">Landlord / Property Owner</span>
+                    <label class="border rounded-xl p-4 cursor-pointer bg-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-semibold text-gray-900">Landlord</p>
+                                <p class="text-sm text-gray-600">Advertise verified off-campus accommodation.</p>
+                            </div>
+                            <input type="radio" name="role" value="landlord" class="text-red-800 focus:ring-red-800" {{ old('role') === 'landlord' ? 'checked' : '' }}>
+                        </div>
                     </label>
                 </div>
                 @error('role')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
-            </div>
+            </section>
 
-            <!-- STEP 2: Personal Information -->
-            <div class="mb-6 border-b border-gray-200 pb-4">
-                <h3 class="text-lg font-semibold text-red-800 mb-4">Personal Information</h3>
-
+            <section class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-semibold text-red-800 mb-4">Basic Details</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                            Full Name <span class="text-red-600">*</span>
-                        </label>
-                        <input id="name" type="text" name="name" value="{{ old('name') }}" required
-                               class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800 @error('name') border-red-500 @enderror"
-                               placeholder="Your full name">
+                    <div class="md:col-span-2">
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <input id="name" type="text" name="name" value="{{ old('name') }}" required class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800" placeholder="Your full name">
                         @error('name')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Student ID (students only) -->
-                    <div id="field_student_id" class="student-only">
-                        <label for="student_id" class="block text-sm font-medium text-gray-700 mb-2">
-                            Student ID <span class="text-red-600">*</span>
-                        </label>
-                        <input id="student_id" type="text" name="student_id" value="{{ old('student_id') }}"
-                               class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800 @error('student_id') border-red-500 @enderror"
-                               placeholder="e.g., 201905436">
-                        @error('student_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Surname (students only) -->
-                    <div id="field_surname" class="student-only">
-                        <label for="surname" class="block text-sm font-medium text-gray-700 mb-2">
-                            Surname <span class="text-red-600">*</span>
-                        </label>
-                        <input id="surname" type="text" name="surname" value="{{ old('surname') }}"
-                               class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800 @error('surname') border-red-500 @enderror"
-                               placeholder="Your surname">
-                        @error('surname')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Company Name (landlords only) -->
-                    <div id="field_company" class="landlord-only" style="display:none">
-                        <label for="company_name" class="block text-sm font-medium text-gray-700 mb-2">
-                            Company Name <span class="text-red-600">*</span>
-                        </label>
-                        <input id="company_name" type="text" name="company_name" value="{{ old('company_name') }}"
-                               class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800 @error('company_name') border-red-500 @enderror"
-                               placeholder="Your company name">
-                        @error('company_name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Phone (landlords only) -->
-                    <div id="field_phone" class="landlord-only" style="display:none">
-                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-                            Phone Number <span class="text-red-600">*</span>
-                        </label>
-                        <input id="phone" type="tel" name="phone" value="{{ old('phone') }}"
-                               class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800 @error('phone') border-red-500 @enderror"
-                               placeholder="+267 71 234 567">
-                        @error('phone')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 3: Account Security -->
-            <div class="mb-6 border-b border-gray-200 pb-4">
-                <h3 class="text-lg font-semibold text-red-800 mb-4">Account Security</h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                            Email Address <span class="text-red-600">*</span>
-                        </label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required
-                               class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800 @error('email') border-red-500 @enderror"
-                               placeholder="201905436@ub.ac.bw">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" required class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800" placeholder="name@example.com">
                         @error('email')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                            Password <span class="text-red-600">*</span>
-                        </label>
-                        <input id="password" type="password" name="password" required
-                               class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800 @error('password') border-red-500 @enderror"
-                               placeholder="••••••••">
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input id="password" type="password" name="password" required class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800">
                         @error('password')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-                            Confirm Password <span class="text-red-600">*</span>
-                        </label>
-                        <input id="password_confirmation" type="password" name="password_confirmation" required
-                               class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800"
-                               placeholder="••••••••">
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                        <input id="password_confirmation" type="password" name="password_confirmation" required class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-800 focus:ring-red-800">
                     </div>
                 </div>
+            </section>
+
+            <section id="student-fields" class="space-y-6">
+                <div class="border rounded-xl p-6 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Student Profile</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
+                            <input type="text" name="student_id" value="{{ old('student_id') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300" placeholder="201905436">
+                            @error('student_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Surname</label>
+                            <input type="text" name="surname" value="{{ old('surname') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300">
+                            @error('surname')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Student Category</label>
+                            <select name="student_category" id="student_category" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300">
+                                <option value="local" {{ old('student_category', 'local') === 'local' ? 'selected' : '' }}>Local</option>
+                                <option value="international" {{ old('student_category') === 'international' ? 'selected' : '' }}>International</option>
+                            </select>
+                            @error('student_category')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
+                            <input type="text" name="nationality" value="{{ old('nationality') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300" placeholder="Botswana">
+                            @error('nationality')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div id="country_of_origin_wrap">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Country of Origin</label>
+                            <input type="text" name="country_of_origin" value="{{ old('country_of_origin') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300" placeholder="Country of origin">
+                            @error('country_of_origin')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div id="passport_number_wrap">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Passport Number</label>
+                            <input type="text" name="passport_number" value="{{ old('passport_number') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300" placeholder="Passport number">
+                            @error('passport_number')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="md:col-span-2" id="immigration_status_wrap">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Immigration Status</label>
+                            <input type="text" name="immigration_status" value="{{ old('immigration_status') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300" placeholder="Study permit, visa stage, or related notes">
+                            @error('immigration_status')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded-xl p-6 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Student Documents</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Acceptance Letter</label>
+                            <input type="file" name="acceptance_letter" class="block w-full text-sm text-gray-700">
+                            @error('acceptance_letter')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Proof of Registration</label>
+                            <input type="file" name="proof_of_registration" class="block w-full text-sm text-gray-700">
+                            @error('proof_of_registration')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div id="passport_upload_wrap">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Passport Copy</label>
+                            <input type="file" name="passport" class="block w-full text-sm text-gray-700">
+                            @error('passport')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="landlord-fields" class="space-y-6" style="display:none">
+                <div class="border rounded-xl p-6 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Landlord Profile</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                            <input type="text" name="company_name" value="{{ old('company_name') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300">
+                            @error('company_name')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                            <input type="text" name="phone" value="{{ old('phone') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300" placeholder="+267 71 234 567">
+                            @error('phone')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Company Registration Number</label>
+                            <input type="text" name="company_registration_number" value="{{ old('company_registration_number') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300">
+                            @error('company_registration_number')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tax Identification Number</label>
+                            <input type="text" name="tax_identification_number" value="{{ old('tax_identification_number') }}" class="auth-input w-full px-4 py-3 rounded-lg border border-gray-300">
+                            @error('tax_identification_number')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded-xl p-6 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Verification Documents</h3>
+                    <p class="text-sm text-gray-600 mb-4">Listings become available only after admin review of company registration, tax clearance, director or signatory ID, and property ownership documents.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Company Registration</label>
+                            <input type="file" name="company_registration_document" class="block w-full text-sm text-gray-700">
+                            @error('company_registration_document')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tax Clearance Certificate</label>
+                            <input type="file" name="tax_clearance_certificate" class="block w-full text-sm text-gray-700">
+                            @error('tax_clearance_certificate')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Director / Signatory ID</label>
+                            <input type="file" name="identity_document" class="block w-full text-sm text-gray-700">
+                            @error('identity_document')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Property Ownership Document</label>
+                            <input type="file" name="property_ownership_document" class="block w-full text-sm text-gray-700">
+                            @error('property_ownership_document')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="flex items-center justify-between pt-2">
+                <a href="{{ route('login') }}" class="text-sm text-gray-600 hover:text-red-800">Already have an account?</a>
+                <button type="submit" class="auth-button text-white px-6 py-3 rounded-lg font-semibold">
+                    Create Account
+                </button>
             </div>
-
-            <!-- STEP 4: Student Documents (students only) -->
-            <div id="student-documents-section" class="bg-gray-50 rounded-xl p-6 mb-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-8 h-8 bg-red-800 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-file-alt text-white text-sm"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900">Required Documents</h3>
-                </div>
-
-                <div class="space-y-5">
-                    <!-- Acceptance Letter -->
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">
-                            <i class="fas fa-file-pdf text-red-600 mr-2"></i>
-                            Acceptance Letter <span class="text-red-600">*</span>
-                        </label>
-                        <div class="flex items-center space-x-3">
-                            <input type="file" name="acceptance_letter" id="acceptance_letter"
-                                   accept=".pdf,.jpg,.jpeg,.png" class="hidden">
-                            <button type="button" onclick="document.getElementById('acceptance_letter').click()"
-                                    class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center">
-                                <i class="fas fa-upload mr-2"></i>Choose File
-                            </button>
-                            <span id="acceptance_file_name" class="text-sm text-gray-500">No file chosen</span>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">PDF, JPG or PNG (Max 2MB)</p>
-                        @error('acceptance_letter')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Proof of Registration -->
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">
-                            <i class="fas fa-file-pdf text-red-600 mr-2"></i>
-                            Proof of Registration <span class="text-red-600">*</span>
-                        </label>
-                        <div class="flex items-center space-x-3">
-                            <input type="file" name="proof_of_registration" id="proof_of_registration"
-                                   accept=".pdf,.jpg,.jpeg,.png" class="hidden">
-                            <button type="button" onclick="document.getElementById('proof_of_registration').click()"
-                                    class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center">
-                                <i class="fas fa-upload mr-2"></i>Choose File
-                            </button>
-                            <span id="proof_file_name" class="text-sm text-gray-500">No file chosen</span>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">PDF, JPG or PNG (Max 2MB)</p>
-                        @error('proof_of_registration')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Passport (all students) -->
-                    <div id="passport-section" class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">
-                            <i class="fas fa-passport text-red-600 mr-2"></i>
-                            Passport Copy <span class="text-red-600">*</span>
-                        </label>
-                        <div class="flex items-center space-x-3">
-                            <input type="file" name="passport" id="passport"
-                                   accept=".pdf,.jpg,.jpeg,.png" class="hidden">
-                            <button type="button" onclick="document.getElementById('passport').click()"
-                                    class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center">
-                                <i class="fas fa-upload mr-2"></i>Choose File
-                            </button>
-                            <span id="passport_file_name" class="text-sm text-gray-500">No file chosen</span>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">PDF, JPG or PNG (Max 2MB)</p>
-                        @error('passport')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                    <div class="flex">
-                        <i class="fas fa-info-circle text-yellow-600 mr-2 mt-0.5"></i>
-                        <p class="text-sm text-gray-700">
-                            Your documents will be verified by the Welfare Office before you can apply for on-campus accommodation. This usually takes 1–2 business days.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 4b: Landlord Documents (landlords only) -->
-            <div id="landlord-documents-section" class="bg-gray-50 rounded-xl p-6 mb-6" style="display:none">
-                <div class="flex items-center mb-4">
-                    <div class="w-8 h-8 bg-red-800 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-file-contract text-white text-sm"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900">Required Documents</h3>
-                </div>
-
-                <div class="space-y-5">
-                    <!-- Lease Agreement -->
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">
-                            <i class="fas fa-file-contract text-red-600 mr-2"></i>
-                            Lease / Ownership Agreement <span class="text-red-600">*</span>
-                        </label>
-                        <div class="flex items-center space-x-3">
-                            <input type="file" name="lease_agreement" id="lease_agreement"
-                                   accept=".pdf,.jpg,.jpeg,.png" class="hidden">
-                            <button type="button" onclick="document.getElementById('lease_agreement').click()"
-                                    class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center">
-                                <i class="fas fa-upload mr-2"></i>Choose File
-                            </button>
-                            <span id="lease_file_name" class="text-sm text-gray-500">No file chosen</span>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">PDF, JPG or PNG (Max 2MB)</p>
-                        @error('lease_agreement')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Identity Document -->
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 hover:border-red-300 transition">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">
-                            <i class="fas fa-id-card text-red-600 mr-2"></i>
-                            Identity Document (ID / Passport) <span class="text-red-600">*</span>
-                        </label>
-                        <div class="flex items-center space-x-3">
-                            <input type="file" name="identity_document" id="identity_document"
-                                   accept=".pdf,.jpg,.jpeg,.png" class="hidden">
-                            <button type="button" onclick="document.getElementById('identity_document').click()"
-                                    class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center">
-                                <i class="fas fa-upload mr-2"></i>Choose File
-                            </button>
-                            <span id="identity_file_name" class="text-sm text-gray-500">No file chosen</span>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">PDF, JPG or PNG (Max 2MB)</p>
-                        @error('identity_document')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                    <div class="flex">
-                        <i class="fas fa-info-circle text-yellow-600 mr-2 mt-0.5"></i>
-                        <p class="text-sm text-gray-700">
-                            Your documents will be reviewed by the Admin before your property listings go live. This usually takes 1–2 business days.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="auth-button w-full text-white font-semibold py-3 px-4 rounded-lg transition">
-                Create Account
-            </button>
-
-            <p class="text-center mt-6 text-gray-600">
-                Already have an account?
-                <a href="{{ route('login') }}" class="auth-link font-semibold hover:underline">Sign in here</a>
-            </p>
         </form>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const studentRadio  = document.getElementById('role_student');
-    const landlordRadio = document.getElementById('role_landlord');
-    const docsSection   = document.getElementById('student-documents-section');
-    const passportSec   = document.getElementById('passport-section');
-    const emailInput    = document.getElementById('email');
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    const studentFields = document.getElementById('student-fields');
+    const landlordFields = document.getElementById('landlord-fields');
+    const studentCategory = document.getElementById('student_category');
+    const passportWrap = document.getElementById('passport_upload_wrap');
+    const passportNumberWrap = document.getElementById('passport_number_wrap');
+    const immigrationStatusWrap = document.getElementById('immigration_status_wrap');
 
-    const landlordDocsSection = document.getElementById('landlord-documents-section');
+    function toggleRoleSections() {
+        const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+        const showStudent = selectedRole === 'student';
 
-    const studentIdInput    = document.getElementById('student_id');
-    const surnameInput      = document.getElementById('surname');
-    const companyInput      = document.getElementById('company_name');
-    const phoneInput        = document.getElementById('phone');
-    const acceptanceInput   = document.getElementById('acceptance_letter');
-    const proofInput        = document.getElementById('proof_of_registration');
-    const passportInput     = document.getElementById('passport');
-    const leaseInput        = document.getElementById('lease_agreement');
-    const identityInput     = document.getElementById('identity_document');
-
-    function setRequired(el, val) {
-        if (!el) return;
-        if (val) el.setAttribute('required', 'required');
-        else el.removeAttribute('required');
+        studentFields.style.display = showStudent ? 'block' : 'none';
+        landlordFields.style.display = showStudent ? 'none' : 'block';
     }
 
-    function show(el) { if (el) el.style.display = 'block'; }
-    function hide(el) { if (el) el.style.display = 'none'; }
-
-    function toggleRole() {
-        const isStudent = studentRadio.checked;
-
-        // Student-only fields
-        document.querySelectorAll('.student-only').forEach(el => {
-            isStudent ? show(el) : hide(el);
-        });
-        // Landlord-only fields
-        document.querySelectorAll('.landlord-only').forEach(el => {
-            isStudent ? hide(el) : show(el);
-        });
-
-        // Documents section (students only)
-        if (isStudent) show(docsSection); else hide(docsSection);
-
-        // Landlord documents section
-        if (!isStudent) show(landlordDocsSection); else hide(landlordDocsSection);
-
-        // Passport always shown for students
-        if (isStudent) { show(passportSec); setRequired(passportInput, true); }
-        else           { hide(passportSec); setRequired(passportInput, false); }
-
-        // Required fields
-        setRequired(studentIdInput,  isStudent);
-        setRequired(surnameInput,    isStudent);
-        setRequired(companyInput,    !isStudent);
-        setRequired(phoneInput,      !isStudent);
-        setRequired(acceptanceInput, isStudent);
-        setRequired(proofInput,      isStudent);
-        setRequired(leaseInput,      !isStudent);
-        setRequired(identityInput,   !isStudent);
-
-        // Email placeholder
-        emailInput.placeholder = isStudent ? '201905436@ub.ac.bw' : 'your@email.com';
+    function toggleInternationalFields() {
+        const international = studentCategory.value === 'international';
+        passportWrap.style.display = international ? 'block' : 'none';
+        passportNumberWrap.style.display = international ? 'block' : 'none';
+        immigrationStatusWrap.style.display = international ? 'block' : 'none';
     }
 
-    studentRadio.addEventListener('change', toggleRole);
-    landlordRadio.addEventListener('change', toggleRole);
+    roleInputs.forEach((input) => input.addEventListener('change', toggleRoleSections));
+    studentCategory.addEventListener('change', toggleInternationalFields);
 
-    // File name display
-    [
-        ['acceptance_letter',    'acceptance_file_name'],
-        ['proof_of_registration','proof_file_name'],
-        ['passport',             'passport_file_name'],
-        ['lease_agreement',      'lease_file_name'],
-        ['identity_document',    'identity_file_name'],
-    ].forEach(function([inputId, spanId]) {
-        var inp  = document.getElementById(inputId);
-        var span = document.getElementById(spanId);
-        if (inp && span) {
-            inp.addEventListener('change', function () {
-                span.textContent = this.files[0] ? this.files[0].name : 'No file chosen';
-            });
-        }
-    });
-
-    // Set initial state on page load
-    toggleRole();
-});
+    toggleRoleSections();
+    toggleInternationalFields();
 </script>
 @endsection

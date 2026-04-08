@@ -3,214 +3,337 @@
 @section('title', $property->title)
 
 @section('header')
-    <h2 class="font-semibold text-xl text-white leading-tight">
-        Property Details
-    </h2>
+    <h2 class="font-semibold text-xl text-white leading-tight">Property Details</h2>
 @endsection
 
 @section('content')
 <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Back Button -->
-        <div class="mb-4">
-            <a href="{{ route('student.off-campus') }}" class="text-red-800 hover:underline">
-                <i class="fas fa-arrow-left mr-2"></i>Back to Properties
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div>
+            <a href="{{ route('student.properties') }}" class="text-red-800 hover:underline text-sm">
+                <i class="fas fa-arrow-left mr-2"></i>Back to verified properties
             </a>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Main Content - Left Column -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Image Gallery -->
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <div class="relative h-96 bg-gray-200">
-                        @if($property->photos && count($property->photos) > 0)
-                            <img src="{{ asset('storage/' . $property->photos[0]) }}" 
-                                 alt="{{ $property->title }}" 
-                                 class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full flex items-center justify-center bg-gray-300">
-                                <i class="fas fa-home text-gray-500 text-6xl"></i>
-                            </div>
-                        @endif
-                        
-                        <!-- Price Badge -->
-                        <div class="absolute top-4 right-4 bg-red-800 text-white px-4 py-2 rounded-lg text-xl font-bold">
-                            P{{ number_format($property->monthly_rent, 2) }}/month
-                        </div>
-                        
-                        <!-- Availability Badge -->
-                        <div class="absolute top-4 left-4">
-                            <span class="px-3 py-1 {{ $property->is_available ? 'bg-green-600' : 'bg-red-600' }} text-white rounded-lg text-sm">
-                                {{ $property->is_available ? 'Available' : 'Not Available' }}
-                            </span>
-                        </div>
+        <div class="bg-white rounded-2xl shadow overflow-hidden">
+            <div class="bg-gradient-to-br from-red-950 via-red-900 to-amber-700 text-white p-8">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.2em] text-red-100">Verified Listing</p>
+                        <h1 class="text-4xl font-bold mt-3">{{ $property->title }}</h1>
+                        <p class="text-red-100 mt-3 max-w-3xl">{{ $property->description }}</p>
                     </div>
-                    
-                    @if($property->photos && count($property->photos) > 1)
-                        <div class="p-4 grid grid-cols-4 gap-2">
-                            @foreach($property->photos as $index => $photo)
-                                @if($index > 0)
-                                    <img src="{{ asset('storage/' . $photo) }}" 
-                                         alt="Property photo {{ $index + 1 }}"
-                                         class="h-20 w-full object-cover rounded cursor-pointer hover:opacity-75 transition"
-                                         onclick="showImage('{{ asset('storage/' . $photo) }}')">
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Property Details -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h1 class="text-2xl font-bold mb-4">{{ $property->title }}</h1>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <i class="fas fa-bed text-red-800 text-xl mb-2"></i>
-                            <p class="text-sm text-gray-600">Bedrooms</p>
-                            <p class="font-bold">{{ $property->bedrooms }}</p>
-                        </div>
-                        <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <i class="fas fa-bath text-red-800 text-xl mb-2"></i>
-                            <p class="text-sm text-gray-600">Bathrooms</p>
-                            <p class="font-bold">{{ $property->bathrooms }}</p>
-                        </div>
-                        <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <i class="fas fa-ruler-combined text-red-800 text-xl mb-2"></i>
-                            <p class="text-sm text-gray-600">Type</p>
-                            <p class="font-bold capitalize">{{ $property->type }}</p>
-                        </div>
-                        <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <i class="fas fa-road text-red-800 text-xl mb-2"></i>
-                            <p class="text-sm text-gray-600">Distance</p>
-                            <p class="font-bold">{{ $property->distance_to_campus_km ?? 'N/A' }} km</p>
-                        </div>
+                    <div class="bg-white/10 backdrop-blur rounded-2xl px-6 py-5 min-w-[240px]">
+                        <p class="text-sm text-red-100">Monthly rent</p>
+                        <p class="text-3xl font-bold mt-2">P{{ number_format($property->monthly_rent, 2) }}</p>
+                        <p class="text-sm text-red-100 mt-2">Deposit: P{{ number_format($property->deposit_amount ?? $property->monthly_rent, 2) }}</p>
+                        <p class="text-sm text-red-100 mt-2">{{ $property->campus_distance_label }}</p>
                     </div>
-
-                    <h2 class="text-lg font-semibold mb-2">Description</h2>
-                    <p class="text-gray-700 mb-6">{{ $property->description }}</p>
-
-                    <h2 class="text-lg font-semibold mb-2">Address</h2>
-                    <p class="text-gray-700 mb-6">{{ $property->address }}, {{ $property->city }}</p>
-
-                    @if($property->amenities)
-                        <h2 class="text-lg font-semibold mb-2">Amenities</h2>
-                        <div class="flex flex-wrap gap-2 mb-6">
-                            @foreach(json_decode($property->amenities) ?? [] as $amenity)
-                                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">{{ $amenity }}</span>
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
             </div>
 
-            <!-- Right Column - Sidebar -->
-            <div class="space-y-6">
-                <!-- Landlord Info -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-lg font-semibold mb-4">Landlord Information</h2>
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-red-800 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                            {{ substr($landlord->name, 0, 1) }}
-                        </div>
-                        <div class="ml-3">
-                            <p class="font-medium">{{ $landlord->name }}</p>
-                            <p class="text-sm text-gray-500">Member since {{ $landlord->created_at->format('M Y') }}</p>
-                        </div>
-                    </div>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex items-center">
-                            <i class="fas fa-phone text-red-800 w-5"></i>
-                            <span>{{ $landlord->phone ?? 'Contact via email' }}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-envelope text-red-800 w-5"></i>
-                            <a href="mailto:{{ $landlord->email }}" class="text-red-800 hover:underline">
-                                {{ $landlord->email }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Viewing Request Card -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-lg font-semibold mb-4">Interested in this property?</h2>
-                    
-                    @if($existingRequest)
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                            <p class="text-sm text-yellow-800">
-                                <i class="fas fa-info-circle mr-2"></i>
-                                You have a {{ $existingRequest->status }} viewing request for this property.
-                            </p>
-                            @if($existingRequest->status == 'pending')
-                                <a href="{{ route('student.viewing-requests.cancel', $existingRequest) }}" 
-                                   class="mt-2 text-sm text-red-600 hover:underline inline-block"
-                                   onclick="return confirm('Are you sure you want to cancel this request?')">
-                                    Cancel Request
-                                </a>
-                            @endif
+            <div class="p-8 grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <div class="xl:col-span-2 space-y-6">
+                    @if($property->photo_urls)
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <img src="{{ $property->first_photo }}" alt="{{ $property->title }}" class="md:col-span-2 w-full h-80 object-cover rounded-2xl border border-gray-200">
+                            <div class="grid grid-cols-2 md:grid-cols-1 gap-4">
+                                @foreach(collect($property->photo_urls)->slice(1, 4) as $photo)
+                                    <img src="{{ $photo }}" alt="{{ $property->title }}" class="w-full h-[118px] object-cover rounded-2xl border border-gray-200">
+                                @endforeach
+                            </div>
                         </div>
                     @endif
 
-                    <a href="{{ route('student.viewing-request.form', $property) }}" 
-                       class="block w-full text-center bg-red-800 text-white px-4 py-3 rounded-lg hover:bg-red-900 transition mb-3">
-                        <i class="fas fa-calendar-check mr-2"></i>
-                        Request Viewing
-                    </a>
-                    
-                    <p class="text-xs text-gray-500 text-center">
-                        You'll be able to select your preferred date and time
-                    </p>
-                </div>
-
-                <!-- Similar Properties (Optional) -->
-                @if(isset($similarProperties) && $similarProperties->count() > 0)
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h2 class="text-lg font-semibold mb-4">Similar Properties</h2>
-                        <div class="space-y-3">
-                            @foreach($similarProperties as $similar)
-                                <a href="{{ route('student.properties.show', $similar) }}" 
-                                   class="block p-3 border rounded-lg hover:bg-gray-50 transition">
-                                    <p class="font-medium">{{ $similar->title }}</p>
-                                    <p class="text-sm text-gray-600">P{{ number_format($similar->monthly_rent, 2) }}/month</p>
-                                </a>
-                            @endforeach
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-gray-50 rounded-2xl p-4">
+                            <p class="text-sm text-gray-500">Bedrooms</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-2">{{ $property->bedrooms }}</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-2xl p-4">
+                            <p class="text-sm text-gray-500">Bathrooms</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-2">{{ $property->bathrooms }}</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-2xl p-4">
+                            <p class="text-sm text-gray-500">Units left</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-2">{{ $property->available_units }}</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-2xl p-4">
+                            <p class="text-sm text-gray-500">Type</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-2 capitalize">{{ $property->type }}</p>
                         </div>
                     </div>
-                @endif
+
+                    <div class="bg-gray-50 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Location and access</h3>
+                        <p class="text-gray-600 mt-2">{{ $property->full_address }}</p>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Transport routes</h4>
+                                <div class="mt-3 space-y-2">
+                                    @forelse($property->transport_routes ?? [] as $route)
+                                        <div class="bg-white rounded-xl px-4 py-3 border border-gray-200 text-sm text-gray-700">{{ $route }}</div>
+                                    @empty
+                                        <p class="text-sm text-gray-500">Transport routes have not been added for this property yet.</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Nearby amenities</h4>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @forelse($property->nearby_amenities ?? [] as $amenity)
+                                        <span class="px-3 py-2 rounded-full bg-white border border-gray-200 text-sm text-gray-700">{{ $amenity }}</span>
+                                    @empty
+                                        <p class="text-sm text-gray-500">No nearby amenities added yet.</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Interactive map</h3>
+                                <p class="text-gray-600 mt-2">View the property relative to {{ $campus['name'] }}, then launch GPS navigation from your current location.</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" data-focus="campus" class="map-focus px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700">Focus campus</button>
+                                <button type="button" data-focus="property" class="map-focus px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700">Focus property</button>
+                            </div>
+                        </div>
+
+                        @if($property->hasCoordinates())
+                            <div id="campusMap" class="mt-6 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-red-50 border border-gray-200 h-[360px] relative overflow-hidden">
+                                <div class="absolute inset-0 opacity-50" style="background-image: linear-gradient(to right, rgba(148,163,184,.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,.2) 1px, transparent 1px); background-size: 40px 40px;"></div>
+                                <div id="routeLine" class="absolute h-1 bg-red-300 origin-left rounded-full"></div>
+                                <button id="campusMarker" class="absolute w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-900 text-white text-xs font-bold shadow-lg">Campus</button>
+                                <button id="propertyMarker" class="absolute w-20 h-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-500 text-white text-xs font-bold shadow-lg">Property</button>
+                            </div>
+                            <div class="mt-4 flex flex-wrap gap-3">
+                                <a href="{{ $property->navigation_url }}" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
+                                    <i class="fas fa-route"></i>Open in Google Maps
+                                </a>
+                                <button type="button" id="gpsNavigateBtn" class="inline-flex items-center gap-2 border border-gray-300 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                    <i class="fas fa-location-arrow"></i>Navigate from my location
+                                </button>
+                            </div>
+                        @else
+                            <div class="mt-6 rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
+                                GPS coordinates have not been added to this listing yet.
+                            </div>
+                        @endif
+
+                        @if($property->navigation_notes)
+                            <div class="mt-4 bg-gray-50 rounded-xl p-4 text-sm text-gray-700">
+                                <span class="font-semibold text-gray-900">Navigation notes:</span>
+                                {{ $property->navigation_notes }}
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="bg-gray-50 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Property features</h3>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            @forelse($property->amenities ?? [] as $amenity)
+                                <span class="px-4 py-2 rounded-full bg-white border border-gray-200 text-sm text-gray-700">{{ $amenity }}</span>
+                            @empty
+                                <p class="text-sm text-gray-500">No extra features added yet.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Landlord</h3>
+                        <p class="text-gray-600 mt-2">{{ $landlord->company_name ?? $landlord->name }}</p>
+                        <div class="mt-4 space-y-2 text-sm text-gray-700">
+                            <p><i class="fas fa-phone text-red-800 mr-2"></i>{{ $landlord->phone ?? 'Contact available after request' }}</p>
+                            <p><i class="fas fa-envelope text-red-800 mr-2"></i>{{ $landlord->email }}</p>
+                            <p><i class="fas fa-shield-check text-red-800 mr-2"></i>Verification complete</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Book this accommodation</h3>
+                        @if($existingBooking)
+                            <div class="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-900">
+                                Existing booking: {{ $existingBooking->booking_reference }} ({{ ucfirst(str_replace('_', ' ', $existingBooking->status)) }})
+                            </div>
+                        @endif
+                        <form method="POST" action="{{ route('student.properties.book', $property) }}" class="space-y-4 mt-4">
+                            @csrf
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Preferred move-in date</label>
+                                <input type="date" name="move_in_date" min="{{ now()->addDay()->toDateString() }}" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Lease months</label>
+                                    <input type="number" name="lease_months" value="12" min="3" max="24" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Occupants</label>
+                                    <input type="number" name="occupants" value="1" min="1" max="8" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Special requests</label>
+                                <textarea name="special_requests" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="Accessibility, furnishing, or move-in notes"></textarea>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-700">
+                                Total payable now: <span class="font-bold text-gray-900">P{{ number_format($property->monthly_rent + ($property->deposit_amount ?? $property->monthly_rent), 2) }}</span>
+                            </div>
+                            <button type="submit" class="w-full bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
+                                Select and pay for this property
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Arrange a viewing</h3>
+                        @if($existingRequest)
+                            <div class="mt-4 bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-900">
+                                Latest request status: {{ ucfirst($existingRequest->status) }}
+                            </div>
+                        @endif
+                        <form method="POST" action="{{ route('student.viewing-request', $property) }}" class="space-y-4 mt-4">
+                            @csrf
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Preferred viewing date</label>
+                                <input type="date" name="preferred_date" min="{{ now()->addDay()->toDateString() }}" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Message to landlord</label>
+                                <textarea name="message" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="Any timing or access notes"></textarea>
+                            </div>
+                            <button type="submit" class="w-full border border-red-800 text-red-800 px-4 py-3 rounded-lg font-semibold hover:bg-red-50 transition">
+                                Send viewing request
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Ask the landlord a question</h3>
+                        @if($existingEnquiry)
+                            <div class="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-900">
+                                Latest enquiry: {{ $existingEnquiry->subject }} ({{ ucfirst($existingEnquiry->status) }})
+                            </div>
+                        @endif
+                        <form method="POST" action="{{ route('student.properties.enquiries.store', $property) }}" class="space-y-4 mt-4">
+                            @csrf
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                <input type="text" name="subject" class="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="Ask about availability, utilities, or lease terms" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                <textarea name="message" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="Type your question for the landlord" required></textarea>
+                            </div>
+                            <button type="submit" class="w-full border border-red-800 text-red-800 px-4 py-3 rounded-lg font-semibold hover:bg-red-50 transition">
+                                Send enquiry
+                            </button>
+                        </form>
+                    </div>
+
+                    @if($similarProperties->count())
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-gray-900">Similar properties</h3>
+                            <div class="space-y-3 mt-4">
+                                @foreach($similarProperties as $similar)
+                                    <a href="{{ route('student.properties.show', $similar) }}" class="block rounded-xl border border-gray-200 p-4 hover:border-red-300 transition">
+                                        <p class="font-semibold text-gray-900">{{ $similar->title }}</p>
+                                        <p class="text-sm text-gray-600 mt-1">P{{ number_format($similar->monthly_rent, 2) }} • {{ $similar->campus_distance_label }}</p>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Image Modal -->
-<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50">
-    <div class="relative max-w-4xl mx-auto">
-        <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300">
-            <i class="fas fa-times text-2xl"></i>
-        </button>
-        <img id="modalImage" src="" alt="Property image" class="max-h-screen max-w-full">
-    </div>
-</div>
-
+@if($property->hasCoordinates())
 <script>
-    function showImage(src) {
-        document.getElementById('modalImage').src = src;
-        document.getElementById('imageModal').classList.remove('hidden');
-        document.getElementById('imageModal').classList.add('flex');
-    }
+    const campus = { lat: {{ $campus['latitude'] }}, lng: {{ $campus['longitude'] }} };
+    const propertyPoint = { lat: {{ $property->latitude }}, lng: {{ $property->longitude }} };
+    const map = document.getElementById('campusMap');
+    const campusMarker = document.getElementById('campusMarker');
+    const propertyMarker = document.getElementById('propertyMarker');
+    const routeLine = document.getElementById('routeLine');
+    const focusButtons = document.querySelectorAll('.map-focus');
+    const gpsNavigateBtn = document.getElementById('gpsNavigateBtn');
 
-    function closeImageModal() {
-        document.getElementById('imageModal').classList.add('hidden');
-        document.getElementById('imageModal').classList.remove('flex');
-    }
+    function projectPoint(point, focus = 'all') {
+        const points = [campus, propertyPoint];
+        const latMin = Math.min(...points.map(p => p.lat)) - 0.01;
+        const latMax = Math.max(...points.map(p => p.lat)) + 0.01;
+        const lngMin = Math.min(...points.map(p => p.lng)) - 0.01;
+        const lngMax = Math.max(...points.map(p => p.lng)) + 0.01;
 
-    // Close modal when clicking outside
-    document.getElementById('imageModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeImageModal();
+        const x = ((point.lng - lngMin) / (lngMax - lngMin)) * 100;
+        const y = (1 - ((point.lat - latMin) / (latMax - latMin))) * 100;
+
+        if (focus === 'campus' && point === campus) {
+            return { x: 30, y: 35 };
         }
+        if (focus === 'campus' && point === propertyPoint) {
+            return { x: 72, y: 62 };
+        }
+        if (focus === 'property' && point === campus) {
+            return { x: 25, y: 68 };
+        }
+        if (focus === 'property' && point === propertyPoint) {
+            return { x: 70, y: 38 };
+        }
+
+        return { x, y };
+    }
+
+    function renderMap(focus = 'all') {
+        const campusPos = projectPoint(campus, focus);
+        const propertyPos = projectPoint(propertyPoint, focus);
+
+        campusMarker.style.left = `${campusPos.x}%`;
+        campusMarker.style.top = `${campusPos.y}%`;
+        propertyMarker.style.left = `${propertyPos.x}%`;
+        propertyMarker.style.top = `${propertyPos.y}%`;
+
+        const dx = propertyPos.x - campusPos.x;
+        const dy = propertyPos.y - campusPos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        routeLine.style.left = `${campusPos.x}%`;
+        routeLine.style.top = `${campusPos.y}%`;
+        routeLine.style.width = `${distance}%`;
+        routeLine.style.transform = `rotate(${angle}deg)`;
+    }
+
+    focusButtons.forEach((button) => {
+        button.addEventListener('click', () => renderMap(button.dataset.focus));
     });
+
+    gpsNavigateBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            window.open(@json($property->navigation_url), '_blank');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition((position) => {
+            const origin = `${position.coords.latitude},${position.coords.longitude}`;
+            const destination = `${propertyPoint.lat},${propertyPoint.lng}`;
+            const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+            window.open(url, '_blank');
+        }, () => {
+            window.open(@json($property->navigation_url), '_blank');
+        });
+    });
+
+    renderMap();
 </script>
+@endif
 @endsection

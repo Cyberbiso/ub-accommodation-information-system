@@ -47,7 +47,7 @@
                             <div class="mt-3">
                                 <h4 class="text-sm font-medium mb-2">Subtasks:</h4>
                                 <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
-                                    @foreach(json_decode($item->subtasks) as $subtask)
+                                    @foreach($item->subtasks ?? [] as $subtask)
                                     <li>{{ $subtask }}</li>
                                     @endforeach
                                 </ul>

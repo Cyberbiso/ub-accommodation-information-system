@@ -7,6 +7,7 @@ use App\Models\CampusOffice;
 use App\Models\ImmigrationRequirement;
 use App\Models\OnboardingChecklist;
 use App\Models\Resource;
+use Illuminate\Support\Facades\Storage;
 
 class InformationHubController extends Controller
 {
@@ -107,12 +108,39 @@ class InformationHubController extends Controller
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($resourceQuery) use ($search) {
+                $resourceQuery->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+            });
+        }
 
         $resources = $query->latest()->paginate(12);
-        $categories = Resource::select('category')->distinct()->pluck('category');
-        $types = Resource::select('type')->distinct()->pluck('type');
+        $categories = Resource::where('is_active', true)->select('category')->distinct()->pluck('category');
+        $types = Resource::where('is_active', true)->select('type')->distinct()->pluck('type');
 
         return view('information.resources', compact('resources', 'categories', 'types'));
+    }
+
+    public function downloadResource(Resource $resource)
+    {
+        abort_unless($resource->is_active, 404);
+
+        $resource->increment('download_count');
+
+        if ($resource->file_path && Storage::disk('public')->exists($resource->file_path)) {
+            return response()->download(
+                storage_path('app/public/' . $resource->file_path),
+                basename($resource->file_path)
+            );
+        }
+
+        if ($resource->external_link) {
+            return redirect()->away($resource->external_link);
+        }
+
+        abort(404);
     }
 
     /**

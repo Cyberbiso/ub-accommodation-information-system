@@ -28,20 +28,20 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div class="text-center">
-                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">8+</div>
+                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">{{ number_format($stats['on_campus_rooms']) }}</div>
                 <div class="text-gray-600">On-Campus Rooms</div>
             </div>
             <div class="text-center">
-                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">5+</div>
+                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">{{ number_format($stats['off_campus_properties']) }}</div>
                 <div class="text-gray-600">Off-Campus Properties</div>
             </div>
             <div class="text-center">
-                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">10+</div>
-                <div class="text-gray-600">Campus Offices</div>
+                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">{{ number_format($stats['active_landlords']) }}</div>
+                <div class="text-gray-600">Verified Landlords</div>
             </div>
             <div class="text-center">
-                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">15+</div>
-                <div class="text-gray-600">Info Resources</div>
+                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">{{ number_format($stats['happy_students']) }}</div>
+                <div class="text-gray-600">Registered Students</div>
             </div>
         </div>
     </div>

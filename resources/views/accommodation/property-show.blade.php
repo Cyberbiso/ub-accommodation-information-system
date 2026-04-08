@@ -77,7 +77,7 @@
                     <div class="mt-6">
                         <h3 class="text-lg font-semibold mb-2">Amenities</h3>
                         <div class="flex flex-wrap gap-2">
-                            @foreach(json_decode($property->amenities) ?? [] as $amenity)
+                            @foreach($property->amenities ?? [] as $amenity)
                                 <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">{{ $amenity }}</span>
                             @endforeach
                         </div>
@@ -88,20 +88,19 @@
                     <div class="mt-8 space-y-3">
                         @auth
                             @if(Auth::user()->isStudent())
-                                <a href="{{ route('student.viewing-request', $property) }}" 
+                                <a href="{{ route('student.properties.show', $property) }}" 
                                    class="block w-full text-center bg-red-800 text-white px-6 py-3 rounded-lg hover:bg-red-900 transition">
-                                    Request Viewing
+                                    Open Student Booking & Viewing Tools
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" 
-                                   class="block w-full text-center bg-gray-300 text-gray-700 px-6 py-3 rounded-lg cursor-not-allowed">
-                                    Login as Student to Request Viewing
-                                </a>
+                                <div class="block w-full text-center bg-gray-100 text-gray-700 px-6 py-3 rounded-lg">
+                                    Only student accounts can request viewings or book this property
+                                </div>
                             @endif
                         @else
                             <a href="{{ route('login') }}" 
                                class="block w-full text-center bg-red-800 text-white px-6 py-3 rounded-lg hover:bg-red-900 transition">
-                                Login to Request Viewing
+                                Login as Student to Continue
                             </a>
                         @endauth
                     </div>
@@ -110,9 +109,18 @@
                 <!-- Right Column - Placeholder for Photos -->
                 <div>
                     <h2 class="text-2xl font-bold mb-4">Photos</h2>
-                    <div class="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
-                        <p class="text-gray-500">Property photos will appear here</p>
-                    </div>
+                    @if(count($property->photo_urls) > 0)
+                        <div class="grid grid-cols-1 gap-4">
+                            <img src="{{ $property->first_photo }}" alt="{{ $property->title }}" class="w-full h-80 object-cover rounded-lg">
+                            @foreach(collect($property->photo_urls)->slice(1, 3) as $photo)
+                                <img src="{{ $photo }}" alt="{{ $property->title }}" class="w-full h-40 object-cover rounded-lg">
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
+                            <p class="text-gray-500">Property photos will appear here</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

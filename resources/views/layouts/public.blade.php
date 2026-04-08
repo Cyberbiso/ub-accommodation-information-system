@@ -107,7 +107,15 @@
                 
                 @auth
                     <hr class="my-2">
-                    <a href="{{ url('/student/dashboard') }}" class="block px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-md">📊 Dashboard</a>
+                    @if(Auth::user()->isStudent())
+                        <a href="{{ url('/student/dashboard') }}" class="block px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-md">📊 Dashboard</a>
+                    @elseif(Auth::user()->isLandlord())
+                        <a href="{{ url('/landlord/dashboard') }}" class="block px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-md">📊 Dashboard</a>
+                    @elseif(Auth::user()->isWelfare())
+                        <a href="{{ url('/welfare/dashboard') }}" class="block px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-md">📊 Dashboard</a>
+                    @elseif(Auth::user()->isAdmin())
+                        <a href="{{ url('/admin/dashboard') }}" class="block px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-md">📊 Dashboard</a>
+                    @endif
                     <a href="{{ url('/profile') }}" class="block px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-md">👤 Profile</a>
                     <form method="POST" action="{{ url('/logout') }}">
                         @csrf
@@ -131,6 +139,26 @@
             menu.classList.toggle('hidden');
         });
     </script>
+
+    @if($sharedAnnouncements->count())
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="space-y-3">
+                @foreach($sharedAnnouncements as $announcement)
+                    <div class="rounded-2xl border px-5 py-4 {{ $announcement->priority === 'important' ? 'bg-red-50 border-red-200' : ($announcement->priority === 'warning' ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200') }}">
+                        <div class="flex items-start justify-between gap-4 flex-wrap">
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ $announcement->title }}</p>
+                                <p class="text-sm text-gray-700 mt-1">{{ $announcement->content }}</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $announcement->priority === 'important' ? 'bg-red-100 text-red-800' : ($announcement->priority === 'warning' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800') }}">
+                                {{ ucfirst($announcement->priority) }}
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     <!-- Flash Messages -->
     @if(session('success'))

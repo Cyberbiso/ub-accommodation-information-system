@@ -95,7 +95,7 @@
                             <div class="mb-4">
                                 <p class="text-sm font-medium text-gray-700 mb-2">Amenities:</p>
                                 <div class="flex flex-wrap gap-2">
-                                    @foreach(json_decode($property->amenities) ?? [] as $amenity)
+                                    @foreach($property->amenities ?? [] as $amenity)
                                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">{{ $amenity }}</span>
                                     @endforeach
                                 </div>
@@ -109,15 +109,15 @@
                                     View Details
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" 
-                                   class="block w-full text-center bg-gray-300 text-gray-700 px-4 py-2 rounded-lg cursor-not-allowed">
-                                    Login as Student to View
+                                <a href="{{ route('properties.show', $property) }}" 
+                                   class="block w-full text-center border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+                                    View Details
                                 </a>
                             @endif
                         @else
-                            <a href="{{ route('login') }}" 
+                            <a href="{{ route('properties.show', $property) }}" 
                                class="block w-full text-center bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition">
-                                Login to View
+                                View Details
                             </a>
                         @endauth
                     </div>

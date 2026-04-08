@@ -3,245 +3,212 @@
 @section('title', 'Student Dashboard')
 
 @section('header')
-    <h2 class="font-semibold text-xl text-white leading-tight">
-        Student Dashboard
-    </h2>
+    <h2 class="font-semibold text-xl text-white leading-tight">Student Dashboard</h2>
 @endsection
 
 @section('content')
 <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
-        @if(session('success'))
-            <div class="mb-6 bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
-                <p class="text-sm text-green-700">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        <!-- Welcome Card with Document Status -->
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6">
-            <div class="p-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-900">Welcome, {{ Auth::user()->name }}!</h3>
-                        <p class="text-gray-600 mt-1">Manage your accommodation applications and document verification.</p>
-                    </div>
-
-                    @php
-                        $docStatus = Auth::user()->document_status;
-                        $statusColors = [
-                            'verified' => 'bg-green-100 text-green-800 border-green-300',
-                            'rejected' => 'bg-red-100 text-red-800 border-red-300',
-                            'pending'  => 'bg-yellow-100 text-yellow-800 border-yellow-300',
-                        ];
-                        $statusLabels = [
-                            'verified' => '✓ Documents Verified',
-                            'rejected' => '✗ Documents Rejected',
-                            'pending'  => '⏳ Documents Under Review',
-                        ];
-                    @endphp
-
-                    <span class="px-4 py-2 rounded-full text-sm font-semibold border {{ $statusColors[$docStatus] ?? 'bg-gray-100 text-gray-800 border-gray-300' }}">
-                        {{ $statusLabels[$docStatus] ?? 'No Documents' }}
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-white shadow-xl rounded-2xl overflow-hidden">
+            <div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.2em] text-red-700 font-semibold">UB Onboarding</p>
+                    <h1 class="text-3xl font-bold text-gray-900 mt-2">{{ Auth::user()->name }}</h1>
+                    <p class="text-gray-600 mt-2 max-w-2xl">
+                        {{ Auth::user()->isInternational() ? 'International student support is active on your account. Use the help desk for immigration and onboarding questions.' : 'Track accommodation applications, payments, and support requests from one place.' }}
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <span class="px-4 py-2 rounded-full text-sm font-semibold {{ Auth::user()->document_status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                        Documents: {{ ucfirst(Auth::user()->document_status) }}
+                    </span>
+                    <span class="px-4 py-2 rounded-full text-sm font-semibold {{ Auth::user()->isInternational() ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700' }}">
+                        {{ Auth::user()->isInternational() ? 'International Student' : 'Local Student' }}
                     </span>
                 </div>
             </div>
         </div>
 
-        <!-- Stats Row -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold text-blue-600">{{ $stats['total_applications'] }}</div>
-                <div class="text-xs text-gray-600 mt-1">Total Applications</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-9 gap-4">
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Applications</p>
+                <p class="text-2xl font-bold text-gray-900 mt-2">{{ $stats['total_applications'] }}</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold text-yellow-600">{{ $stats['pending_applications'] }}</div>
-                <div class="text-xs text-gray-600 mt-1">Pending</div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Pending</p>
+                <p class="text-2xl font-bold text-amber-600 mt-2">{{ $stats['pending_applications'] }}</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold text-green-600">{{ $stats['approved_applications'] }}</div>
-                <div class="text-xs text-gray-600 mt-1">Approved</div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Approved</p>
+                <p class="text-2xl font-bold text-green-600 mt-2">{{ $stats['approved_applications'] }}</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold text-red-600">{{ $stats['rejected_applications'] }}</div>
-                <div class="text-xs text-gray-600 mt-1">Rejected</div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Bookings</p>
+                <p class="text-2xl font-bold text-blue-600 mt-2">{{ $stats['off_campus_bookings'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Viewings</p>
+                <p class="text-2xl font-bold text-gray-900 mt-2">{{ $stats['total_viewings'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Upcoming</p>
+                <p class="text-2xl font-bold text-indigo-600 mt-2">{{ $stats['upcoming_viewings'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Pending Payments</p>
+                <p class="text-2xl font-bold text-red-700 mt-2">{{ $stats['pending_payments'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Help Desk</p>
+                <p class="text-2xl font-bold text-purple-600 mt-2">{{ $stats['open_support_requests'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <p class="text-xs uppercase text-gray-500">Enquiries</p>
+                <p class="text-2xl font-bold text-indigo-600 mt-2">{{ $stats['property_enquiries'] }}</p>
             </div>
         </div>
 
-        <!-- Document Verification Status -->
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900">Your Documents</h3>
-                <p class="text-gray-600 text-sm mt-1">Status of your uploaded documents</p>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+            <a href="{{ route('student.apply.form') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">On-Campus</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Apply for Housing</h3>
+                <p class="text-gray-600 mt-2 text-sm">Submit your residence application and room preferences.</p>
+            </a>
+            <a href="{{ route('student.properties') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Off-Campus</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Browse Verified Properties</h3>
+                <p class="text-gray-600 mt-2 text-sm">Explore map-ready listings with transport routes and amenities.</p>
+            </a>
+            <a href="{{ route('student.bookings') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Payments</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Manage Bookings</h3>
+                <p class="text-gray-600 mt-2 text-sm">Pay for selected off-campus accommodation and track status.</p>
+            </a>
+            <a href="{{ route('student.support') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Support</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Virtual Help Desk</h3>
+                <p class="text-gray-600 mt-2 text-sm">Get help with immigration, registration, accommodation, and onboarding.</p>
+            </a>
+            <a href="{{ route('student.enquiries') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Messages</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Track Enquiries</h3>
+                <p class="text-gray-600 mt-2 text-sm">Follow up on questions sent to landlords about properties.</p>
+            </a>
+        </div>
 
-            <div class="p-6">
-                @php
-                    $user      = Auth::user();
-                    $documents = $user->documents()->get();
-                @endphp
-
-                @if($documents->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        @foreach($documents as $document)
-                            @php
-                                $cardColors = [
-                                    'verified' => 'bg-green-50 border-green-300',
-                                    'rejected' => 'bg-red-50 border-red-300',
-                                    'pending'  => 'bg-yellow-50 border-yellow-300',
-                                ];
-                                $icons = ['verified' => '✓', 'rejected' => '✗', 'pending' => '⏳'];
-                                $textColors = [
-                                    'verified' => 'text-green-600',
-                                    'rejected' => 'text-red-600',
-                                    'pending'  => 'text-yellow-600',
-                                ];
-                                $labels = [
-                                    'acceptance_letter'    => 'Acceptance Letter',
-                                    'proof_of_registration'=> 'Proof of Registration',
-                                    'passport'             => 'Passport Copy',
-                                ];
-                            @endphp
-
-                            <div class="border-2 rounded-lg p-5 {{ $cardColors[$document->status] ?? 'bg-gray-50 border-gray-300' }}">
-                                <div class="flex items-start justify-between mb-3">
-                                    <h4 class="font-bold text-gray-900">
-                                        {{ $labels[$document->document_type] ?? ucfirst(str_replace('_',' ',$document->document_type)) }}
-                                    </h4>
-                                    <span class="text-xl">{{ $icons[$document->status] ?? '📄' }}</span>
-                                </div>
-
-                                <div class="space-y-2">
-                                    <span class="text-sm font-medium {{ $textColors[$document->status] ?? 'text-gray-600' }}">
-                                        {{ ucfirst($document->status === 'pending' ? 'Under Review' : $document->status) }}
-                                    </span>
-
-                                    <div class="bg-white rounded-lg p-2 border border-gray-200">
-                                        <div class="flex items-center text-sm text-gray-600">
-                                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>
-                                            <span class="truncate" title="{{ $document->original_name }}">
-                                                {{ $document->original_name }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    @if($document->status === 'rejected' && $document->rejection_reason)
-                                        <button onclick="showRejectionReason('{{ addslashes($document->rejection_reason) }}')"
-                                                class="text-xs text-red-600 hover:underline mt-2">
-                                            View Rejection Reason →
-                                        </button>
-                                    @endif
-                                </div>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="xl:col-span-2 bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-900">Recent Applications</h3>
+                    <a href="{{ route('student.applications') }}" class="text-sm text-red-800 hover:underline">View all</a>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    @forelse($recentApplications as $application)
+                        <div class="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ $application->accommodation->name ?? 'General room allocation request' }}</p>
+                                <p class="text-sm text-gray-600">Submitted {{ $application->created_at->format('d M Y') }}</p>
                             </div>
-                        @endforeach
-                    </div>
-
-                    @if($user->document_status === 'rejected')
-                        <div class="mt-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-                            <p class="text-sm text-red-700">
-                                <span class="font-semibold">Document Verification Failed:</span>
-                                Some documents were rejected. Please contact the Welfare Office.
-                            </p>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $application->status === 'approved' ? 'bg-green-100 text-green-800' : ($application->status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                {{ ucfirst($application->status) }}
+                            </span>
                         </div>
-                    @elseif($user->document_status === 'pending')
-                        <div class="mt-6 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                            <p class="text-sm text-blue-700">
-                                <span class="font-semibold">Documents Under Review:</span>
-                                Your documents are being verified by the Welfare Office (1–2 business days).
-                            </p>
-                        </div>
-                    @endif
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No applications yet.</div>
+                    @endforelse
+                </div>
+            </div>
 
-                @else
-                    <div class="text-center py-12">
-                        <div class="text-gray-400 text-6xl mb-4"><i class="fas fa-file-upload"></i></div>
-                        <h4 class="text-lg font-medium text-gray-900 mb-2">No Documents Uploaded</h4>
-                        <p class="text-gray-500">Please upload your required documents during registration.</p>
-                    </div>
-                @endif
+            <div class="bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-900">Help Desk Snapshot</h3>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    @forelse($supportRequests as $ticket)
+                        <div class="p-5">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="font-semibold text-gray-900">{{ $ticket->subject }}</p>
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold {{ in_array($ticket->status, ['resolved', 'closed']) ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+                                    {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">{{ ucfirst($ticket->category) }} • {{ $ticket->reference }}</p>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No support requests submitted yet.</div>
+                    @endforelse
+                </div>
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <a href="{{ route('student.apply.form') }}"
-               class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition flex items-center justify-between group">
-                <div>
-                    <h3 class="font-semibold text-lg text-gray-900">Apply for On-Campus Housing</h3>
-                    <p class="text-gray-600 text-sm">Submit your accommodation application</p>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-900">Off-Campus Bookings</h3>
                 </div>
-                <i class="fas fa-arrow-right text-red-800 text-2xl group-hover:translate-x-2 transition"></i>
-            </a>
+                <div class="divide-y divide-gray-100">
+                    @forelse($recentBookings as $booking)
+                        <div class="p-5 flex items-center justify-between gap-4">
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ $booking->property->title }}</p>
+                                <p class="text-sm text-gray-600">{{ $booking->booking_reference }} • Move in {{ $booking->move_in_date->format('d M Y') }}</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $booking->status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
+                                {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
+                            </span>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No off-campus bookings yet.</div>
+                    @endforelse
+                </div>
+            </div>
 
-            <a href="{{ route('student.properties') }}"
-               class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition flex items-center justify-between group">
-                <div>
-                    <h3 class="font-semibold text-lg text-gray-900">Browse Off-Campus</h3>
-                    <p class="text-gray-600 text-sm">Find private properties near campus</p>
+            <div class="bg-white rounded-2xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-900">Recent Payments</h3>
                 </div>
-                <i class="fas fa-arrow-right text-red-800 text-2xl group-hover:translate-x-2 transition"></i>
-            </a>
+                <div class="divide-y divide-gray-100">
+                    @forelse($recentPayments as $payment)
+                        <div class="p-5 flex items-center justify-between gap-4">
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ $payment->type_label }}</p>
+                                <p class="text-sm text-gray-600">{{ $payment->formatted_amount }}</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $payment->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                {{ ucfirst($payment->status) }}
+                            </span>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">No payments recorded yet.</div>
+                    @endforelse
+                </div>
+            </div>
         </div>
 
-        <!-- Recent Applications -->
-        @if($recentApplications->count() > 0)
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6">
-            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-900">Recent Applications</h3>
-                <a href="{{ route('student.applications') }}" class="text-sm text-red-800 hover:underline">View All</a>
+        <div class="bg-white rounded-2xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-semibold text-gray-900">Recent Property Enquiries</h3>
+                <a href="{{ route('student.enquiries') }}" class="text-sm text-red-800 hover:underline">View all</a>
             </div>
             <div class="divide-y divide-gray-100">
-                @foreach($recentApplications as $application)
-                <div class="p-4 flex items-center justify-between">
-                    <div>
-                        <p class="font-medium text-gray-900">{{ $application->accommodation->name ?? 'N/A' }}</p>
-                        <p class="text-sm text-gray-500">{{ $application->created_at->format('M d, Y') }}</p>
+                @forelse($recentEnquiries as $enquiry)
+                    <div class="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <p class="font-semibold text-gray-900">{{ $enquiry->subject }}</p>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $enquiry->status === 'responded' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                    {{ ucfirst($enquiry->status) }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">{{ $enquiry->property->title }} • {{ $enquiry->landlord->company_name ?? $enquiry->landlord->name }}</p>
+                        </div>
+                        <a href="{{ route('student.properties.show', $enquiry->property) }}" class="border border-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Open property</a>
                     </div>
-                    <span class="px-3 py-1 rounded-full text-xs font-medium
-                        @if($application->status === 'approved') bg-green-100 text-green-800
-                        @elseif($application->status === 'rejected') bg-red-100 text-red-800
-                        @elseif($application->status === 'pending') bg-yellow-100 text-yellow-800
-                        @else bg-gray-100 text-gray-800 @endif">
-                        {{ ucfirst($application->status) }}
-                    </span>
-                </div>
-                @endforeach
+                @empty
+                    <div class="p-8 text-center text-gray-500">No property enquiries sent yet.</div>
+                @endforelse
             </div>
         </div>
-        @endif
-
     </div>
 </div>
-
-<!-- Rejection Reason Modal -->
-<div id="rejectionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md w-full">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-900">Rejection Reason</h3>
-            <button onclick="closeRejectionModal()" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <p id="rejectionReason" class="text-gray-700 mb-6 bg-gray-50 p-4 rounded-lg"></p>
-        <div class="flex justify-end">
-            <button onclick="closeRejectionModal()" class="bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition">
-                Close
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-    function showRejectionReason(reason) {
-        document.getElementById('rejectionReason').textContent = reason;
-        const modal = document.getElementById('rejectionModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-    function closeRejectionModal() {
-        const modal = document.getElementById('rejectionModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-</script>
 @endsection

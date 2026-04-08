@@ -91,7 +91,7 @@
                             <div class="mb-4">
                                 <p class="text-sm font-medium text-gray-700 mb-2">Facilities:</p>
                                 <div class="flex flex-wrap gap-2">
-                                    @foreach(json_decode($accommodation->facilities) ?? [] as $facility)
+                                    @foreach($accommodation->facilities ?? [] as $facility)
                                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">{{ $facility }}</span>
                                     @endforeach
                                 </div>
@@ -100,20 +100,20 @@
                         
                         @auth
                             @if(Auth::user()->isStudent())
-                                <a href="{{ route('student.accommodations.apply.form') }}" 
+                                <a href="{{ route('student.accommodations.show', $accommodation) }}" 
                                    class="block w-full text-center bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition">
-                                    Apply Now
+                                    View Details & Apply
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" 
-                                   class="block w-full text-center bg-gray-300 text-gray-700 px-4 py-2 rounded-lg cursor-not-allowed">
-                                    Login as Student to Apply
+                                <a href="{{ route('accommodations.show', $accommodation) }}" 
+                                   class="block w-full text-center border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+                                    View Room Details
                                 </a>
                             @endif
                         @else
-                            <a href="{{ route('login') }}" 
+                            <a href="{{ route('accommodations.show', $accommodation) }}" 
                                class="block w-full text-center bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition">
-                                Login to Apply
+                                View Room Details
                             </a>
                         @endauth
                     </div>

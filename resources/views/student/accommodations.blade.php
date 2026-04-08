@@ -23,7 +23,7 @@
                                 <p class="text-sm text-gray-600">Type: {{ ucfirst($accommodation->type) }}</p>
                                 <p class="text-sm text-gray-600">Rent: P{{ number_format($accommodation->monthly_rent, 2) }}/month</p>
                                 <p class="text-sm text-gray-600">Capacity: {{ $accommodation->current_occupancy }}/{{ $accommodation->capacity }}</p>
-                                <a href="#" class="mt-3 inline-block bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900">View Details</a>
+                                <a href="{{ route('student.accommodations.show', $accommodation) }}" class="mt-3 inline-block bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900">View Details</a>
                             </div>
                         @endforeach
                     </div>

@@ -149,12 +149,12 @@
                         @if($property->amenities)
                             <div class="mb-4">
                                 <div class="flex flex-wrap gap-2">
-                                    @foreach(array_slice(json_decode($property->amenities) ?? [], 0, 3) as $amenity)
+                                    @foreach(array_slice($property->amenities ?? [], 0, 3) as $amenity)
                                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">{{ $amenity }}</span>
                                     @endforeach
-                                    @if(count(json_decode($property->amenities) ?? []) > 3)
+                                    @if(count($property->amenities ?? []) > 3)
                                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-                                            +{{ count(json_decode($property->amenities)) - 3 }} more
+                                            +{{ count($property->amenities) - 3 }} more
                                         </span>
                                     @endif
                                 </div>
@@ -166,7 +166,7 @@
                                class="flex-1 text-center bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition">
                                 View Details
                             </a>
-                            <a href="{{ route('student.viewing-request.form', $property) }}" 
+                            <a href="{{ route('student.properties.show', $property) }}" 
                                class="px-4 py-2 border border-red-800 text-red-800 rounded-lg hover:bg-red-50 transition">
                                 <i class="fas fa-calendar-check"></i>
                             </a>

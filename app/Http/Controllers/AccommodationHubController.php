@@ -17,8 +17,8 @@ class AccommodationHubController extends Controller
         // Get statistics
         $stats = [
             'on_campus' => Accommodation::where('is_available', true)->count() ?: 8,
-            'off_campus' => Property::where('is_approved', true)->where('is_available', true)->count() ?: 5,
-            'landlords' => \App\Models\User::where('role', 'landlord')->count() ?: 3,
+            'off_campus' => Property::live()->count() ?: 5,
+            'landlords' => \App\Models\User::where('role', 'landlord')->where('landlord_verification_status', 'verified')->count() ?: 3,
             'viewings' => ViewingRequest::count() ?: 12,
         ];
 
@@ -30,8 +30,7 @@ class AccommodationHubController extends Controller
             ->get();
 
         // Get featured properties
-        $featuredProperties = Property::where('is_approved', true)
-            ->where('is_available', true)
+        $featuredProperties = Property::live()
             ->inRandomOrder()
             ->take(3)
             ->get();
@@ -71,7 +70,7 @@ class AccommodationHubController extends Controller
      */
     public function offCampus(Request $request)
     {
-        $query = Property::where('is_approved', true)->where('is_available', true);
+        $query = Property::live();
 
         // Apply filters
         if ($request->filled('city')) {
@@ -104,8 +103,8 @@ class AccommodationHubController extends Controller
             }
         }
 
-        $cities = Property::where('is_approved', true)->select('city')->distinct()->pluck('city');
-        $types = Property::where('is_approved', true)->select('type')->distinct()->pluck('type');
+        $cities = Property::approved()->select('city')->distinct()->pluck('city');
+        $types = Property::approved()->select('type')->distinct()->pluck('type');
         
         $properties = $query->paginate(12);
 
@@ -126,7 +125,7 @@ class AccommodationHubController extends Controller
     public function showProperty(Property $property)
     {
         // Check if property is approved and available
-        if (!$property->is_approved || !$property->is_available) {
+        if ($property->review_status !== 'approved' || !$property->is_approved || !$property->is_available) {
             abort(404, 'Property not found or not available.');
         }
         

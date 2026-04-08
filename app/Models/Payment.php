@@ -140,6 +140,10 @@ class Payment extends Model
      */
     public function getTypeLabelAttribute(): string
     {
+        if ($this->payable_type === PropertyBooking::class) {
+            return 'Off-Campus Accommodation Payment';
+        }
+
         return match($this->type) {
             'application_fee' => 'Application Fee',
             'deposit' => 'Security Deposit',
