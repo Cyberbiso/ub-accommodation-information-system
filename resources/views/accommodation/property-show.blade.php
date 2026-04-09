@@ -86,6 +86,19 @@
                     
                     <!-- Action Buttons -->
                     <div class="mt-8 space-y-3">
+                        @if($property->navigation_url)
+                            <a href="{{ $property->navigation_url }}"
+                               target="_blank"
+                               rel="noreferrer"
+                               class="block w-full text-center border border-red-200 bg-red-50 text-red-800 px-6 py-3 rounded-lg font-semibold hover:bg-red-100 transition">
+                                <i class="fas fa-route mr-2"></i>Open in Google Maps
+                            </a>
+                        @else
+                            <div class="block w-full text-center bg-yellow-50 text-yellow-800 px-6 py-3 rounded-lg">
+                                Google Maps directions will appear here once a location pin has been added for this property.
+                            </div>
+                        @endif
+
                         @auth
                             @if(Auth::user()->isStudent())
                                 <a href="{{ route('student.properties.show', $property) }}" 

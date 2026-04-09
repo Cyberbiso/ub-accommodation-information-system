@@ -95,21 +95,33 @@
                         <div class="flex items-center justify-between gap-4">
                             <div>
                                 <h3 class="text-xl font-bold text-gray-900">Interactive map</h3>
-                                <p class="text-gray-600 mt-2">View the property relative to {{ $campus['name'] }}, then launch GPS navigation from your current location.</p>
+                                <p class="text-gray-600 mt-2">Preview the property on Google Maps, switch to the campus route, then launch GPS navigation from your current location.</p>
                             </div>
-                            <div class="flex gap-2">
-                                <button type="button" data-focus="campus" class="map-focus px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700">Focus campus</button>
-                                <button type="button" data-focus="property" class="map-focus px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700">Focus property</button>
-                            </div>
+                            @if($property->hasCoordinates())
+                                @php
+                                    $propertyPreviewUrl = 'https://maps.google.com/maps?q=' . $property->latitude . ',' . $property->longitude . '&z=15&output=embed';
+                                    $campusRoutePreviewUrl = 'https://maps.google.com/maps?saddr=' . $campus['latitude'] . ',' . $campus['longitude'] . '&daddr=' . $property->latitude . ',' . $property->longitude . '&output=embed';
+                                @endphp
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" data-preview="{{ $propertyPreviewUrl }}" class="map-preview-toggle px-4 py-2 rounded-lg bg-red-800 text-sm font-semibold text-white">Property preview</button>
+                                    <button type="button" data-preview="{{ $campusRoutePreviewUrl }}" class="map-preview-toggle px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700">Route from campus</button>
+                                </div>
+                            @endif
                         </div>
 
                         @if($property->hasCoordinates())
-                            <div id="campusMap" class="mt-6 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-red-50 border border-gray-200 h-[360px] relative overflow-hidden">
-                                <div class="absolute inset-0 opacity-50" style="background-image: linear-gradient(to right, rgba(148,163,184,.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,.2) 1px, transparent 1px); background-size: 40px 40px;"></div>
-                                <div id="routeLine" class="absolute h-1 bg-red-300 origin-left rounded-full"></div>
-                                <button id="campusMarker" class="absolute w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-900 text-white text-xs font-bold shadow-lg">Campus</button>
-                                <button id="propertyMarker" class="absolute w-20 h-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-500 text-white text-xs font-bold shadow-lg">Property</button>
+                            <div class="mt-6 rounded-2xl border border-gray-200 overflow-hidden bg-gray-100">
+                                <iframe
+                                    id="googleMapPreview"
+                                    src="{{ $propertyPreviewUrl }}"
+                                    class="w-full h-[420px]"
+                                    style="border:0;"
+                                    loading="lazy"
+                                    allowfullscreen
+                                    referrerpolicy="no-referrer-when-downgrade">
+                                </iframe>
                             </div>
+                            <p class="mt-3 text-sm text-gray-500">Use the buttons above to switch between the property pin and the route from {{ $campus['name'] }}.</p>
                             <div class="mt-4 flex flex-wrap gap-3">
                                 <a href="{{ $property->navigation_url }}" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
                                     <i class="fas fa-route"></i>Open in Google Maps
@@ -258,63 +270,25 @@
 
 @if($property->hasCoordinates())
 <script>
-    const campus = { lat: {{ $campus['latitude'] }}, lng: {{ $campus['longitude'] }} };
     const propertyPoint = { lat: {{ $property->latitude }}, lng: {{ $property->longitude }} };
-    const map = document.getElementById('campusMap');
-    const campusMarker = document.getElementById('campusMarker');
-    const propertyMarker = document.getElementById('propertyMarker');
-    const routeLine = document.getElementById('routeLine');
-    const focusButtons = document.querySelectorAll('.map-focus');
+    const previewFrame = document.getElementById('googleMapPreview');
+    const previewButtons = document.querySelectorAll('.map-preview-toggle');
     const gpsNavigateBtn = document.getElementById('gpsNavigateBtn');
 
-    function projectPoint(point, focus = 'all') {
-        const points = [campus, propertyPoint];
-        const latMin = Math.min(...points.map(p => p.lat)) - 0.01;
-        const latMax = Math.max(...points.map(p => p.lat)) + 0.01;
-        const lngMin = Math.min(...points.map(p => p.lng)) - 0.01;
-        const lngMax = Math.max(...points.map(p => p.lng)) + 0.01;
+    previewButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            if (previewFrame) {
+                previewFrame.src = button.dataset.preview;
+            }
 
-        const x = ((point.lng - lngMin) / (lngMax - lngMin)) * 100;
-        const y = (1 - ((point.lat - latMin) / (latMax - latMin))) * 100;
+            previewButtons.forEach((item) => {
+                item.classList.remove('bg-red-800', 'text-white');
+                item.classList.add('border', 'border-gray-300', 'text-gray-700');
+            });
 
-        if (focus === 'campus' && point === campus) {
-            return { x: 30, y: 35 };
-        }
-        if (focus === 'campus' && point === propertyPoint) {
-            return { x: 72, y: 62 };
-        }
-        if (focus === 'property' && point === campus) {
-            return { x: 25, y: 68 };
-        }
-        if (focus === 'property' && point === propertyPoint) {
-            return { x: 70, y: 38 };
-        }
-
-        return { x, y };
-    }
-
-    function renderMap(focus = 'all') {
-        const campusPos = projectPoint(campus, focus);
-        const propertyPos = projectPoint(propertyPoint, focus);
-
-        campusMarker.style.left = `${campusPos.x}%`;
-        campusMarker.style.top = `${campusPos.y}%`;
-        propertyMarker.style.left = `${propertyPos.x}%`;
-        propertyMarker.style.top = `${propertyPos.y}%`;
-
-        const dx = propertyPos.x - campusPos.x;
-        const dy = propertyPos.y - campusPos.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-        routeLine.style.left = `${campusPos.x}%`;
-        routeLine.style.top = `${campusPos.y}%`;
-        routeLine.style.width = `${distance}%`;
-        routeLine.style.transform = `rotate(${angle}deg)`;
-    }
-
-    focusButtons.forEach((button) => {
-        button.addEventListener('click', () => renderMap(button.dataset.focus));
+            button.classList.remove('border', 'border-gray-300', 'text-gray-700');
+            button.classList.add('bg-red-800', 'text-white');
+        });
     });
 
     gpsNavigateBtn.addEventListener('click', () => {
@@ -332,8 +306,6 @@
             window.open(@json($property->navigation_url), '_blank');
         });
     });
-
-    renderMap();
 </script>
 @endif
 @endsection

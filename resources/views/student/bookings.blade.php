@@ -56,16 +56,11 @@
                             <p class="text-sm text-gray-500">Amount due</p>
                             <p class="text-3xl font-bold text-gray-900 mt-2">P{{ number_format($booking->total_amount, 2) }}</p>
                             @if($booking->payment && $booking->payment->status === 'pending')
-                                <form method="POST" action="{{ route('student.payments.process') }}" class="space-y-3 mt-5">
-                                    @csrf
-                                    <input type="hidden" name="payment_id" value="{{ $booking->payment->id }}">
-                                    <select name="payment_method" class="w-full border border-gray-300 rounded-lg px-4 py-3">
-                                        <option value="card">Card</option>
-                                        <option value="bank_transfer">Bank transfer</option>
-                                        <option value="mobile_money">Mobile money</option>
-                                    </select>
-                                    <button type="submit" class="w-full bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">Pay and confirm</button>
-                                </form>
+                                @include('student._payment-form', [
+                                    'payment' => $booking->payment,
+                                    'submitLabel' => 'Pay and confirm',
+                                    'formClass' => 'mt-5',
+                                ])
                             @else
                                 <div class="mt-5 text-sm text-green-700 font-semibold">Payment completed</div>
                             @endif

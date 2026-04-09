@@ -27,7 +27,7 @@
 
             <div class="divide-y divide-gray-100">
                 @forelse($payments as $payment)
-                    <div class="p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div class="p-6 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h3 class="text-lg font-bold text-gray-900">{{ $payment->type_label }}</h3>
@@ -41,16 +41,12 @@
                             @endif
                         </div>
                         @if($payment->status === 'pending')
-                            <form method="POST" action="{{ route('student.payments.process') }}" class="flex flex-col sm:flex-row gap-3">
-                                @csrf
-                                <input type="hidden" name="payment_id" value="{{ $payment->id }}">
-                                <select name="payment_method" class="border border-gray-300 rounded-lg px-4 py-2">
-                                    <option value="card">Card</option>
-                                    <option value="bank_transfer">Bank transfer</option>
-                                    <option value="mobile_money">Mobile money</option>
-                                </select>
-                                <button type="submit" class="bg-red-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-900 transition">Pay now</button>
-                            </form>
+                            <div class="w-full lg:max-w-md">
+                                @include('student._payment-form', [
+                                    'payment' => $payment,
+                                    'submitLabel' => 'Pay now',
+                                ])
+                            </div>
                         @endif
                     </div>
                 @empty

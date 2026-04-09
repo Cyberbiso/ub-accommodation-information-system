@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Illuminate\Validation\ValidationException;
 
 class StudentController extends Controller
 {
@@ -540,12 +541,9 @@ class StudentController extends Controller
 
     public function processPayment(Request $request)
     {
-        $request->validate([
-            'payment_id' => 'required|exists:payments,id',
-            'payment_method' => 'required|in:card,bank_transfer,mobile_money',
-        ]);
+        $validated = $this->validatePaymentSubmission($request);
 
-        $payment = Payment::where('id', $request->payment_id)
+        $payment = Payment::where('id', $validated['payment_id'])
             ->where('student_id', Auth::id())
             ->with('payable')
             ->firstOrFail();
@@ -560,9 +558,17 @@ class StudentController extends Controller
                 ->with('error', 'This property is no longer available. Please choose another listing.');
         }
 
+        $methodCapture = $this->buildPaymentMethodCapture($validated);
+
         try {
-            DB::transaction(function () use ($payment, $request) {
-                $payment->update(['payment_method' => $request->payment_method]);
+            DB::transaction(function () use ($payment, $validated, $methodCapture) {
+                $paymentDetails = is_array($payment->payment_details) ? $payment->payment_details : [];
+                $paymentDetails['method_capture'] = $methodCapture;
+
+                $payment->update([
+                    'payment_method' => $validated['payment_method'],
+                    'payment_details' => $paymentDetails,
+                ]);
                 $payment->markAsCompleted('TXN_' . strtoupper(Str::random(10)));
 
                 if ($payment->payable instanceof PropertyBooking) {
@@ -664,5 +670,84 @@ class StudentController extends Controller
         if ($requireAvailability) {
             abort_unless($property->is_available && $property->available_units > 0, 404);
         }
+    }
+
+    private function validatePaymentSubmission(Request $request): array
+    {
+        $currentYear = (int) now()->format('Y');
+
+        $validated = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'payment_method' => 'required|in:card,bank_transfer,mobile_money',
+            'cardholder_name' => 'nullable|required_if:payment_method,card|string|max:255',
+            'card_number' => ['nullable', 'required_if:payment_method,card', 'string', 'max:23', 'regex:/^[0-9 ]{12,23}$/'],
+            'expiry_month' => 'nullable|required_if:payment_method,card|integer|between:1,12',
+            'expiry_year' => 'nullable|required_if:payment_method,card|integer|min:' . $currentYear . '|max:' . ($currentYear + 20),
+            'cvv' => ['nullable', 'required_if:payment_method,card', 'string', 'regex:/^\d{3,4}$/'],
+            'bank_name' => 'nullable|required_if:payment_method,bank_transfer|string|max:255',
+            'account_name' => 'nullable|required_if:payment_method,bank_transfer|string|max:255',
+            'account_number' => ['nullable', 'required_if:payment_method,bank_transfer', 'string', 'max:34', 'regex:/^[A-Za-z0-9 -]{6,34}$/'],
+            'branch_code' => 'nullable|required_if:payment_method,bank_transfer|string|max:50',
+            'mobile_provider' => 'nullable|required_if:payment_method,mobile_money|string|max:100',
+            'mobile_number' => ['nullable', 'required_if:payment_method,mobile_money', 'string', 'max:20', 'regex:/^[0-9+\s-]{7,20}$/'],
+        ]);
+
+        if (($validated['payment_method'] ?? null) === 'card') {
+            $expiryMonth = (int) $validated['expiry_month'];
+            $expiryYear = (int) $validated['expiry_year'];
+            $currentMonth = (int) now()->format('n');
+
+            if ($expiryYear === $currentYear && $expiryMonth < $currentMonth) {
+                throw ValidationException::withMessages([
+                    'expiry_month' => 'The card expiry date must be in the future.',
+                ]);
+            }
+        }
+
+        return $validated;
+    }
+
+    private function buildPaymentMethodCapture(array $validated): array
+    {
+        return match ($validated['payment_method']) {
+            'card' => [
+                'kind' => 'card',
+                'cardholder_name' => trim($validated['cardholder_name']),
+                'card_last_four' => substr($this->digitsOnly($validated['card_number']), -4),
+                'card_expiry' => sprintf('%02d/%d', (int) $validated['expiry_month'], (int) $validated['expiry_year']),
+                'captured_at' => now()->toDateTimeString(),
+            ],
+            'bank_transfer' => [
+                'kind' => 'bank_transfer',
+                'bank_name' => trim($validated['bank_name']),
+                'account_name' => trim($validated['account_name']),
+                'account_number_masked' => $this->maskValue($validated['account_number']),
+                'branch_code' => trim($validated['branch_code']),
+                'captured_at' => now()->toDateTimeString(),
+            ],
+            'mobile_money' => [
+                'kind' => 'mobile_money',
+                'provider' => trim($validated['mobile_provider']),
+                'mobile_number_masked' => $this->maskValue($validated['mobile_number']),
+                'captured_at' => now()->toDateTimeString(),
+            ],
+        };
+    }
+
+    private function digitsOnly(string $value): string
+    {
+        return preg_replace('/\D+/', '', $value) ?? '';
+    }
+
+    private function maskValue(string $value, int $visibleCharacters = 4): string
+    {
+        $normalized = preg_replace('/\s+/', '', trim($value)) ?? '';
+        $length = strlen($normalized);
+
+        if ($length <= $visibleCharacters) {
+            return $normalized;
+        }
+
+        return str_repeat('*', $length - $visibleCharacters) . substr($normalized, -$visibleCharacters);
     }
 }

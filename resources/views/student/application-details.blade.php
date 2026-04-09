@@ -91,16 +91,11 @@
                             </div>
 
                             @if($application->payment->status === 'pending')
-                                <form method="POST" action="{{ route('student.payments.process') }}" class="mt-5 space-y-3">
-                                    @csrf
-                                    <input type="hidden" name="payment_id" value="{{ $application->payment->id }}">
-                                    <select name="payment_method" class="w-full border border-gray-300 rounded-lg px-4 py-3">
-                                        <option value="card">Card</option>
-                                        <option value="bank_transfer">Bank transfer</option>
-                                        <option value="mobile_money">Mobile money</option>
-                                    </select>
-                                    <button type="submit" class="w-full bg-red-800 text-white rounded-lg px-4 py-3 font-semibold hover:bg-red-900 transition">Pay now</button>
-                                </form>
+                                @include('student._payment-form', [
+                                    'payment' => $application->payment,
+                                    'submitLabel' => 'Pay now',
+                                    'formClass' => 'mt-5',
+                                ])
                             @endif
                         </div>
                     @endif
