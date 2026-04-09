@@ -20,25 +20,29 @@
             </div>
 
             <div class="divide-y divide-gray-100">
-                @forelse($viewingRequests as $request)
+                @forelse($viewingRequests as $viewingRequest)
                     <div class="p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
-                                <h3 class="text-xl font-bold text-gray-900">{{ $request->property->title }}</h3>
-                                <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $request->status === 'approved' ? 'bg-green-100 text-green-800' : ($request->status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                    {{ ucfirst($request->status) }}
+                                <h3 class="text-xl font-bold text-gray-900">{{ $viewingRequest->property->title ?? 'Property unavailable' }}</h3>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $viewingRequest->status === 'approved' ? 'bg-green-100 text-green-800' : ($viewingRequest->status === 'rejected' ? 'bg-red-100 text-red-800' : ($viewingRequest->status === 'completed' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')) }}">
+                                    {{ ucfirst($viewingRequest->status) }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-2">Requested for {{ $request->preferred_date->format('d M Y') }}</p>
-                            <p class="text-sm text-gray-600 mt-1">{{ $request->property->city }} • P{{ number_format($request->property->monthly_rent, 2) }}/month</p>
-                            @if($request->scheduled_date)
-                                <p class="text-sm text-green-700 mt-2">Scheduled: {{ $request->scheduled_date->format('d M Y H:i') }}</p>
+                            <p class="text-sm text-gray-600 mt-2">Requested for {{ $viewingRequest->preferred_date?->format('d M Y') ?? 'Date not provided' }}</p>
+                            <p class="text-sm text-gray-600 mt-1">{{ $viewingRequest->property->city ?? 'Location unavailable' }} @if($viewingRequest->property) • P{{ number_format($viewingRequest->property->monthly_rent, 2) }}/month @endif</p>
+                            @if($viewingRequest->scheduled_date)
+                                <p class="text-sm text-green-700 mt-2">Scheduled: {{ $viewingRequest->scheduled_date->format('d M Y H:i') }}</p>
                             @endif
-                            @if($request->landlord_response)
-                                <p class="text-sm text-gray-700 mt-2">{{ $request->landlord_response }}</p>
+                            @if($viewingRequest->landlord_response)
+                                <p class="text-sm text-gray-700 mt-2">{{ $viewingRequest->landlord_response }}</p>
                             @endif
                         </div>
-                        <a href="{{ route('student.properties.show', $request->property) }}" class="border border-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Open property</a>
+                        @if($viewingRequest->property)
+                            <a href="{{ route('student.properties.show', $viewingRequest->property) }}" class="border border-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Open property</a>
+                        @else
+                            <span class="text-sm text-gray-500">Property no longer available</span>
+                        @endif
                     </div>
                 @empty
                     <div class="p-12 text-center">

@@ -103,6 +103,10 @@ class StudentController extends Controller
             $query->where('type', $request->type);
         }
 
+        if ($request->filled('min_price')) {
+            $query->where('monthly_rent', '>=', $request->min_price);
+        }
+
         if ($request->filled('max_price')) {
             $query->where('monthly_rent', '<=', $request->max_price);
         }
@@ -113,9 +117,9 @@ class StudentController extends Controller
 
         $types = Accommodation::select('type')->distinct()->pluck('type');
         $blocks = Accommodation::select('block')->distinct()->whereNotNull('block')->pluck('block');
-        $accommodations = $query->paginate(9);
+        $accommodations = $query->paginate(9)->withQueryString();
 
-        return view('student.accommodations', compact('accommodations', 'types', 'blocks'));
+        return view('student.on-campus', compact('accommodations', 'types', 'blocks'));
     }
 
     public function showApplicationForm()

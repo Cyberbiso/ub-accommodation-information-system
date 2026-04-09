@@ -12,6 +12,7 @@ use App\Models\ViewingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class LandlordController extends Controller
 {
@@ -222,12 +223,17 @@ class LandlordController extends Controller
             ->with('success', 'Property removed successfully.');
     }
 
-    public function viewingRequests()
+    public function viewingRequests(Request $request)
     {
-        $requests = ViewingRequest::where('landlord_id', Auth::id())
+        $query = ViewingRequest::where('landlord_id', Auth::id())
             ->with(['student', 'property'])
-            ->latest()
-            ->paginate(10);
+            ->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $requests = $query->paginate(10)->withQueryString();
 
         return view('landlord.viewing-requests', compact('requests'));
     }
@@ -236,8 +242,12 @@ class LandlordController extends Controller
     {
         abort_unless($viewingRequest->landlord_id === Auth::id(), 403);
 
+        if ($viewingRequest->status !== 'pending') {
+            return back()->with('error', 'Only pending viewing requests can be approved.');
+        }
+
         $request->validate([
-            'scheduled_date' => 'required|date|after:today',
+            'scheduled_date' => 'required|date|after:now',
             'message' => 'nullable|string|max:500',
         ]);
 
@@ -262,6 +272,10 @@ class LandlordController extends Controller
     public function rejectRequest(Request $request, ViewingRequest $viewingRequest)
     {
         abort_unless($viewingRequest->landlord_id === Auth::id(), 403);
+
+        if ($viewingRequest->status !== 'pending') {
+            return back()->with('error', 'Only pending viewing requests can be rejected.');
+        }
 
         $request->validate([
             'reason' => 'required|string|max:1000',
@@ -355,8 +369,7 @@ class LandlordController extends Controller
             'bathrooms' => 'required|integer|min:0',
             'available_units' => 'required|integer|min:1',
             'distance_to_campus_km' => 'nullable|numeric|min:0',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
+            'google_maps_location' => 'nullable|string|max:2000',
             'amenities_input' => 'nullable|string|max:2000',
             'transport_routes_input' => 'nullable|string|max:2000',
             'nearby_amenities_input' => 'nullable|string|max:2000',
@@ -368,10 +381,11 @@ class LandlordController extends Controller
 
     private function buildPropertyPayload(array $validated, ?Property $property = null, ?Request $request = null): array
     {
+        [$latitude, $longitude] = $this->resolvePropertyCoordinates($validated, $property);
         $distance = $validated['distance_to_campus_km'] ?? null;
 
-        if (!empty($validated['latitude']) && !empty($validated['longitude'])) {
-            $distance = $this->calculateDistanceToCampus((float) $validated['latitude'], (float) $validated['longitude']);
+        if ($latitude !== null && $longitude !== null) {
+            $distance = $this->calculateDistanceToCampus($latitude, $longitude);
         }
 
         $storedPhotos = $property?->photos ?? [];
@@ -393,8 +407,8 @@ class LandlordController extends Controller
             'bathrooms' => $validated['bathrooms'],
             'available_units' => $validated['available_units'],
             'distance_to_campus_km' => $distance,
-            'latitude' => $validated['latitude'] ?? null,
-            'longitude' => $validated['longitude'] ?? null,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
             'amenities' => $this->parseList($validated['amenities_input'] ?? null),
             'transport_routes' => $this->parseList($validated['transport_routes_input'] ?? null),
             'nearby_amenities' => $this->parseList($validated['nearby_amenities_input'] ?? null),
@@ -421,6 +435,55 @@ class LandlordController extends Controller
             ->filter()
             ->values()
             ->all();
+    }
+
+    private function resolvePropertyCoordinates(array $validated, ?Property $property = null): array
+    {
+        $latitude = $property?->latitude;
+        $longitude = $property?->longitude;
+        $locationInput = trim((string) ($validated['google_maps_location'] ?? ''));
+
+        if ($locationInput === '') {
+            return [$latitude, $longitude];
+        }
+
+        [$resolvedLatitude, $resolvedLongitude] = $this->extractCoordinatesFromLocationInput($locationInput);
+
+        if ($resolvedLatitude === null || $resolvedLongitude === null) {
+            throw ValidationException::withMessages([
+                'google_maps_location' => 'Paste a full Google Maps pin URL or coordinates like "-24.6282, 25.9231". Short links cannot be read automatically.',
+            ]);
+        }
+
+        return [$resolvedLatitude, $resolvedLongitude];
+    }
+
+    private function extractCoordinatesFromLocationInput(string $value): array
+    {
+        $value = trim(urldecode(html_entity_decode($value)));
+        $patterns = [
+            '/@(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)/',
+            '/[?&](?:q|query|destination|center|ll)=(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)/',
+            '/!3d(-?\d{1,3}(?:\.\d+)?)!4d(-?\d{1,3}(?:\.\d+)?)/',
+            '/(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (!preg_match($pattern, $value, $matches)) {
+                continue;
+            }
+
+            $latitude = (float) $matches[1];
+            $longitude = (float) $matches[2];
+
+            if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
+                continue;
+            }
+
+            return [$latitude, $longitude];
+        }
+
+        return [null, null];
     }
 
     private function calculateDistanceToCampus(float $latitude, float $longitude): float

@@ -151,7 +151,7 @@
                         <div class="p-5 flex items-center justify-between gap-4">
                             <div>
                                 <p class="font-semibold text-gray-900">{{ $booking->property->title }}</p>
-                                <p class="text-sm text-gray-600">{{ $booking->booking_reference }} • Move in {{ $booking->move_in_date->format('d M Y') }}</p>
+                                <p class="text-sm text-gray-600">{{ $booking->booking_reference }} • Move in {{ $booking->move_in_date?->format('d M Y') ?? 'Not set' }}</p>
                             </div>
                             <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $booking->status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
                                 {{ ucfirst(str_replace('_', ' ', $booking->status)) }}

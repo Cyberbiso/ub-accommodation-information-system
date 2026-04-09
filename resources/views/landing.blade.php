@@ -74,7 +74,7 @@
                     </div>
                     <h3 class="text-xl font-semibold mb-2">On-Campus Housing</h3>
                     <p class="text-gray-600 mb-4">Apply for university-managed accommodation directly through our platform.</p>
-                    <a href="{{ url('/accommodations') }}" class="text-red-800 hover:text-red-900 font-medium inline-flex items-center">
+                    <a href="{{ auth()->check() && auth()->user()->isStudent() ? route('student.accommodations') : route('accommodations.index') }}" class="text-red-800 hover:text-red-900 font-medium inline-flex items-center">
                         Browse Rooms <i class="fas fa-arrow-right ml-2 text-sm"></i>
                     </a>
                 </div>
@@ -104,7 +104,13 @@
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Viewing Requests</h3>
                     <p class="text-gray-600 mb-4">Request property viewings and get instant responses from landlords.</p>
-                    <a href="{{ route('student.viewing-requests') }}" class="text-red-800 hover:text-red-900 font-medium inline-flex items-center">
+                    <a href="{{ auth()->guest()
+                        ? route('login')
+                        : (auth()->user()->isStudent()
+                            ? route('student.viewing-requests')
+                            : (auth()->user()->isLandlord()
+                                ? route('landlord.viewing-requests')
+                                : route('dashboard'))) }}" class="text-red-800 hover:text-red-900 font-medium inline-flex items-center">
                         Manage Viewings <i class="fas fa-arrow-right ml-2 text-sm"></i>
                     </a>
                 </div>
@@ -115,20 +121,20 @@
         <div class="mt-8 bg-gray-50 rounded-lg p-6">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div>
-                    <div class="text-2xl font-bold text-red-800">8+</div>
+                    <div class="text-2xl font-bold text-red-800">{{ number_format($stats['on_campus_rooms']) }}</div>
                     <div class="text-sm text-gray-600">Available Rooms</div>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold text-red-800">5+</div>
+                    <div class="text-2xl font-bold text-red-800">{{ number_format($stats['off_campus_properties']) }}</div>
                     <div class="text-sm text-gray-600">Properties</div>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold text-red-800">3+</div>
+                    <div class="text-2xl font-bold text-red-800">{{ number_format($stats['active_landlords']) }}</div>
                     <div class="text-sm text-gray-600">Landlords</div>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold text-red-800">12+</div>
-                    <div class="text-sm text-gray-600">Viewings This Month</div>
+                    <div class="text-2xl font-bold text-red-800">{{ number_format($stats['happy_students']) }}</div>
+                    <div class="text-sm text-gray-600">Registered Students</div>
                 </div>
             </div>
         </div>

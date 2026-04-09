@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Property extends Model
@@ -40,10 +41,6 @@ class Property extends Model
     ];
 
     protected $casts = [
-        'amenities' => 'array',
-        'transport_routes' => 'array',
-        'nearby_amenities' => 'array',
-        'photos' => 'array',
         'is_available' => 'boolean',
         'is_approved' => 'boolean',
         'reviewed_at' => 'datetime',
@@ -57,6 +54,38 @@ class Property extends Model
         'available_units' => 'integer',
         'listed_at' => 'datetime',
     ];
+
+    protected function amenities(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $this->normalizeListValue($value),
+            set: fn ($value) => $this->encodeListValue($value),
+        );
+    }
+
+    protected function transportRoutes(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $this->normalizeListValue($value),
+            set: fn ($value) => $this->encodeListValue($value),
+        );
+    }
+
+    protected function nearbyAmenities(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $this->normalizeListValue($value),
+            set: fn ($value) => $this->encodeListValue($value),
+        );
+    }
+
+    protected function photos(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $this->normalizeListValue($value, false),
+            set: fn ($value) => $this->encodeListValue($value),
+        );
+    }
 
     public function getAmenitiesBadgesAttribute(): string
     {
@@ -74,8 +103,10 @@ class Property extends Model
 
     public function getFirstPhotoAttribute(): string
     {
-        if ($this->photos && count($this->photos) > 0) {
-            return asset('storage/' . $this->photos[0]);
+        $photos = $this->normalizeListValue($this->getRawOriginal('photos'), false);
+
+        if (!empty($photos)) {
+            return asset('storage/' . $photos[0]);
         }
 
         return asset('images/default-property.jpg');
@@ -83,13 +114,15 @@ class Property extends Model
 
     public function getPhotoUrlsAttribute(): array
     {
-        if (!$this->photos) {
+        $photos = $this->normalizeListValue($this->getRawOriginal('photos'), false);
+
+        if (empty($photos)) {
             return [];
         }
 
         return array_map(function ($photo) {
             return asset('storage/' . $photo);
-        }, $this->photos);
+        }, $photos);
     }
 
     public function getFullAddressAttribute(): string
@@ -206,5 +239,46 @@ class Property extends Model
     public function hasCoordinates(): bool
     {
         return $this->latitude !== null && $this->longitude !== null;
+    }
+
+    private function normalizeListValue($value, bool $splitPlainStrings = true): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        if (is_array($value)) {
+            return array_values(array_filter(array_map(
+                fn ($item) => is_string($item) ? trim($item) : $item,
+                $value
+            ), fn ($item) => $item !== null && $item !== ''));
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE) {
+                if (is_array($decoded)) {
+                    return $this->normalizeListValue($decoded, $splitPlainStrings);
+                }
+
+                return $decoded ? [(string) $decoded] : [];
+            }
+
+            if ($splitPlainStrings) {
+                return array_values(array_filter(array_map('trim', explode(',', $value))));
+            }
+
+            return [trim($value)];
+        }
+
+        return [];
+    }
+
+    private function encodeListValue($value): ?string
+    {
+        $normalized = $this->normalizeListValue($value, false);
+
+        return empty($normalized) ? null : json_encode($normalized);
     }
 }

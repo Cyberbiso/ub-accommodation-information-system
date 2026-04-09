@@ -32,7 +32,7 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-sm">
                                 <div class="bg-gray-50 rounded-xl p-3">
                                     <p class="text-gray-500">Move in</p>
-                                    <p class="font-semibold text-gray-900">{{ $booking->move_in_date->format('d M Y') }}</p>
+                                    <p class="font-semibold text-gray-900">{{ $booking->move_in_date?->format('d M Y') ?? 'Not set' }}</p>
                                 </div>
                                 <div class="bg-gray-50 rounded-xl p-3">
                                     <p class="text-gray-500">Lease</p>

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -41,12 +42,19 @@ class Accommodation extends Model
      * @var array
      */
     protected $casts = [
-        'facilities' => 'array',        // Automatically decode JSON to array
         'is_available' => 'boolean',    // Cast to boolean
         'capacity' => 'integer',
         'current_occupancy' => 'integer',
         'monthly_rent' => 'float',
     ];
+
+    protected function facilities(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $this->normalizeFacilities($value),
+            set: fn ($value) => $this->encodeFacilities($value),
+        );
+    }
 
     // ==========================================
     // HELPER METHODS
@@ -182,5 +190,35 @@ class Accommodation extends Model
     public function scopeInBlock($query, $block)
     {
         return $query->where('block', $block);
+    }
+
+    private function normalizeFacilities($value): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        if (is_array($value)) {
+            return array_values(array_filter(array_map('trim', $value)));
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $this->normalizeFacilities($decoded);
+            }
+
+            return array_values(array_filter(array_map('trim', explode(',', $value))));
+        }
+
+        return [];
+    }
+
+    private function encodeFacilities($value): ?string
+    {
+        $normalized = $this->normalizeFacilities($value);
+
+        return empty($normalized) ? null : json_encode($normalized);
     }
 }

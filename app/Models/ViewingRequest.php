@@ -150,9 +150,9 @@ class ViewingRequest extends Model
      * 
      * @return string
      */
-    public function getFormattedPreferredDateAttribute(): string
+    public function getFormattedPreferredDateAttribute(): ?string
     {
-        return $this->preferred_date->format('M d, Y \a\t h:i A');
+        return $this->preferred_date?->format('M d, Y \a\t h:i A');
     }
 
     /**

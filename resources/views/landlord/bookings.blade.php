@@ -25,7 +25,7 @@
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600 mt-2">{{ $booking->student->name }} • {{ $booking->booking_reference }}</p>
-                            <p class="text-sm text-gray-600 mt-1">Move in {{ $booking->move_in_date->format('d M Y') }} • P{{ number_format($booking->total_amount, 2) }}</p>
+                            <p class="text-sm text-gray-600 mt-1">Move in {{ $booking->move_in_date?->format('d M Y') ?? 'Not set' }} • P{{ number_format($booking->total_amount, 2) }}</p>
                         </div>
                         <div class="text-sm text-gray-600">
                             Payment: {{ ucfirst($booking->payment->status ?? 'pending') }}
