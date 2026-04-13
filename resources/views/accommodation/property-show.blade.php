@@ -64,6 +64,11 @@
                             <div class="w-32 text-gray-600">Landlord:</div>
                             <div>{{ $property->landlord->name }}</div>
                         </div>
+
+                        <div class="flex items-center">
+                            <div class="w-32 text-gray-600">Available:</div>
+                            <div>{{ $property->available_from?->format('d M Y') ?? 'Not set' }}</div>
+                        </div>
                     </div>
                     
                     <!-- Description -->

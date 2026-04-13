@@ -15,6 +15,7 @@ use App\Models\ViewingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Illuminate\Validation\ValidationException;
@@ -384,11 +385,15 @@ class StudentController extends Controller
     {
         $this->ensureApprovedProperty($property, true);
 
+        $minimumMoveInDate = $property->earliest_move_in_date;
+
         $request->validate([
-            'move_in_date' => 'required|date|after:today',
+            'move_in_date' => 'required|date|after_or_equal:' . $minimumMoveInDate,
             'lease_months' => 'required|integer|min:3|max:24',
             'occupants' => 'required|integer|min:1|max:8',
             'special_requests' => 'nullable|string|max:1000',
+        ], [
+            'move_in_date.after_or_equal' => 'The move-in date must be on or after ' . \Carbon\Carbon::parse($minimumMoveInDate)->format('d M Y') . '.',
         ]);
 
         $existingBooking = PropertyBooking::where('student_id', Auth::id())
@@ -447,6 +452,43 @@ class StudentController extends Controller
 
         return redirect()->route('student.bookings')
             ->with('success', 'Property selected successfully. Complete payment to confirm your off-campus accommodation.');
+    }
+
+    public function uploadSignedLease(Request $request, PropertyBooking $booking)
+    {
+        abort_unless($booking->student_id === Auth::id(), 403);
+
+        if (!$booking->property || !$booking->property->hasLeaseAgreement()) {
+            return back()->with('error', 'This property does not have a lease agreement available yet.');
+        }
+
+        $validated = $request->validate([
+            'signed_lease' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        if ($booking->signed_lease_path && Storage::disk('public')->exists($booking->signed_lease_path)) {
+            Storage::disk('public')->delete($booking->signed_lease_path);
+        }
+
+        $file = $validated['signed_lease'];
+        $path = $file->store('signed-leases/' . Auth::id() . '/' . $booking->id, 'public');
+
+        $booking->update([
+            'signed_lease_path' => $path,
+            'signed_lease_original_name' => $file->getClientOriginalName(),
+            'signed_lease_submitted_at' => now(),
+        ]);
+
+        SystemNotification::notifyUser(
+            $booking->landlord_id,
+            'Signed lease submitted',
+            Auth::user()->name . ' uploaded a signed lease for booking ' . $booking->booking_reference . '.',
+            route('landlord.bookings'),
+            'info',
+            Auth::id()
+        );
+
+        return back()->with('success', 'Signed lease uploaded successfully.');
     }
 
     public function bookings()

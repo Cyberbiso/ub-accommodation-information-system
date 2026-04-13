@@ -45,10 +45,10 @@
                     @if($document->path)
                         @php $ext = strtolower(pathinfo($document->original_name, PATHINFO_EXTENSION)); @endphp
                         @if(in_array($ext, ['jpg','jpeg','png']))
-                            <img src="{{ Storage::url($document->path) }}" alt="Document"
+                            <img src="{{ route('documents.student.show', $document) }}" alt="Document"
                                  class="w-full rounded-lg border border-gray-200 mb-4">
                         @endif
-                        <a href="{{ Storage::url($document->path) }}" target="_blank"
+                        <a href="{{ route('documents.student.show', $document) }}" target="_blank"
                            class="block w-full text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm">
                             <i class="fas fa-external-link-alt mr-2"></i>Open Full Document
                         </a>

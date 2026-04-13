@@ -41,6 +41,10 @@
                                     <p class="text-sm text-gray-600 mt-2">{{ $property->full_address }}</p>
                                     <p class="text-sm text-gray-600 mt-1">Landlord: {{ $property->landlord->company_name ?? $property->landlord->name }} • P{{ number_format($property->monthly_rent, 2) }}/month</p>
                                     <p class="text-sm text-gray-600 mt-1">{{ $property->campus_distance_label }} • {{ ucfirst($property->type) }} • {{ $property->bedrooms }} bed / {{ $property->bathrooms }} bath</p>
+                                    <p class="text-sm text-gray-600 mt-1">{{ $property->available_from_label }}</p>
+                                    @if($property->hasLeaseAgreement())
+                                        <a href="{{ route('documents.property-lease.show', $property) }}" target="_blank" class="inline-flex mt-2 text-sm text-red-800 hover:underline">Open lease agreement</a>
+                                    @endif
                                 </div>
                             </div>
 

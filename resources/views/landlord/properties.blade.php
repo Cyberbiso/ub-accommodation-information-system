@@ -32,6 +32,7 @@
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600 mt-2">{{ $property->city }} • P{{ number_format($property->monthly_rent, 2) }}/month • {{ $property->campus_distance_label }}</p>
+                            <p class="text-sm text-gray-600 mt-1">{{ $property->available_from_label }} • Lease {{ $property->hasLeaseAgreement() ? 'uploaded' : 'missing' }}</p>
                             @if($property->review_notes)
                                 <p class="text-sm text-gray-700 mt-2">{{ $property->review_notes }}</p>
                             @endif

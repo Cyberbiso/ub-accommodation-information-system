@@ -58,7 +58,7 @@
                                         @if($document->review_notes)
                                             <p class="text-sm text-gray-700 mt-3">{{ $document->review_notes }}</p>
                                         @endif
-                                        <a href="{{ Storage::url($document->path) }}" target="_blank" class="inline-flex mt-4 text-sm text-red-800 hover:underline">Open document</a>
+                                        <a href="{{ route('documents.landlord-verification.show', $document) }}" target="_blank" class="inline-flex mt-4 text-sm text-red-800 hover:underline">Open document</a>
                                     </div>
                                 @endforeach
                             </div>

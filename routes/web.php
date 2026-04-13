@@ -9,6 +9,7 @@ use App\Http\Controllers\WelfareController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InformationController;
 use App\Http\Controllers\AccommodationHubController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InformationHubController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Http\Request;
@@ -74,6 +75,13 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
+    Route::prefix('documents')->name('documents.')->group(function () {
+        Route::get('/student/{document}', [DocumentController::class, 'showStudentDocument'])->name('student.show');
+        Route::get('/landlord-verification/{document}', [DocumentController::class, 'showLandlordVerificationDocument'])->name('landlord-verification.show');
+        Route::get('/property-lease/{property}', [DocumentController::class, 'showPropertyLease'])->name('property-lease.show');
+        Route::get('/signed-lease/{booking}', [DocumentController::class, 'showSignedLease'])->name('signed-lease.show');
+    });
     
     // Dashboard Redirect based on role
     Route::get('/dashboard', function () {
@@ -122,6 +130,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/properties/{property}/enquiries', [StudentController::class, 'storePropertyEnquiry'])->name('properties.enquiries.store');
         Route::post('/properties/{property}/book', [StudentController::class, 'storePropertyBooking'])->name('properties.book');
         Route::get('/bookings', [StudentController::class, 'bookings'])->name('bookings');
+        Route::post('/bookings/{booking}/signed-lease', [StudentController::class, 'uploadSignedLease'])->name('bookings.signed-lease.upload');
         Route::get('/enquiries', [StudentController::class, 'enquiries'])->name('enquiries');
         
         // Viewing requests
@@ -143,6 +152,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/dashboard', [LandlordController::class, 'dashboard'])->name('dashboard');
         Route::get('/verification', [LandlordController::class, 'verification'])->name('verification');
         Route::post('/verification', [LandlordController::class, 'updateVerification'])->name('verification.update');
+        Route::post('/verification/documents/{document}/replace', [LandlordController::class, 'replaceVerificationDocument'])->name('verification.documents.replace');
+        Route::delete('/verification/documents/{document}', [LandlordController::class, 'destroyVerificationDocument'])->name('verification.documents.destroy');
         Route::get('/properties', [LandlordController::class, 'properties'])->name('properties');
         Route::get('/properties/create', [LandlordController::class, 'createProperty'])->name('properties.create');
         Route::post('/properties', [LandlordController::class, 'storeProperty'])->name('properties.store');

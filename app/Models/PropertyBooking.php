@@ -22,11 +22,15 @@ class PropertyBooking extends Model
         'quoted_rent',
         'deposit_amount',
         'total_amount',
+        'signed_lease_path',
+        'signed_lease_original_name',
+        'signed_lease_submitted_at',
         'paid_at',
     ];
 
     protected $casts = [
         'move_in_date' => 'date',
+        'signed_lease_submitted_at' => 'datetime',
         'paid_at' => 'datetime',
         'quoted_rent' => 'float',
         'deposit_amount' => 'float',
@@ -84,5 +88,10 @@ class PropertyBooking extends Model
             'status' => 'confirmed',
             'paid_at' => now(),
         ]);
+    }
+
+    public function hasSignedLease(): bool
+    {
+        return !empty($this->signed_lease_path);
     }
 }

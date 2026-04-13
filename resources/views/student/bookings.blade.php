@@ -47,6 +47,36 @@
                                     <p class="font-semibold text-gray-900">P{{ number_format($booking->deposit_amount, 2) }}</p>
                                 </div>
                             </div>
+                            <div class="mt-4 rounded-xl border border-gray-200 p-4">
+                                <p class="text-sm font-semibold text-gray-900">Lease workflow</p>
+                                <p class="text-sm text-gray-600 mt-2">{{ $booking->property->available_from_label }}</p>
+                                @if($booking->property->hasLeaseAgreement())
+                                    <div class="mt-3 flex flex-wrap gap-3 text-sm">
+                                        <a href="{{ route('documents.property-lease.show', $booking->property) }}" target="_blank" class="text-red-800 hover:underline">Open landlord lease</a>
+                                        <a href="{{ route('documents.property-lease.show', ['property' => $booking->property, 'download' => 1]) }}" class="text-red-800 hover:underline">Download lease</a>
+                                        @if($booking->hasSignedLease())
+                                            <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-red-800 hover:underline">Open submitted signed lease</a>
+                                            <a href="{{ route('documents.signed-lease.show', ['booking' => $booking, 'download' => 1]) }}" class="text-red-800 hover:underline">Download submitted signed lease</a>
+                                        @endif
+                                    </div>
+
+                                    <form method="POST" action="{{ route('student.bookings.signed-lease.upload', $booking) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
+                                        @csrf
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload signed lease</label>
+                                            <input type="file" name="signed_lease" class="block w-full text-sm text-gray-700" required>
+                                        </div>
+                                        <button type="submit" class="inline-flex items-center rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 transition">
+                                            {{ $booking->hasSignedLease() ? 'Replace signed lease' : 'Submit signed lease' }}
+                                        </button>
+                                        @if($booking->signed_lease_submitted_at)
+                                            <p class="text-xs text-gray-500">Last submitted {{ $booking->signed_lease_submitted_at->diffForHumans() }}</p>
+                                        @endif
+                                    </form>
+                                @else
+                                    <p class="text-sm text-amber-700 mt-2">The landlord has not uploaded a lease agreement for this property yet.</p>
+                                @endif
+                            </div>
                             @if($booking->special_requests)
                                 <p class="text-sm text-gray-600 mt-4">{{ $booking->special_requests }}</p>
                             @endif

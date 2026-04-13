@@ -26,9 +26,18 @@
                             </div>
                             <p class="text-sm text-gray-600 mt-2">{{ $booking->student->name }} • {{ $booking->booking_reference }}</p>
                             <p class="text-sm text-gray-600 mt-1">Move in {{ $booking->move_in_date?->format('d M Y') ?? 'Not set' }} • P{{ number_format($booking->total_amount, 2) }}</p>
+                            <p class="text-sm text-gray-600 mt-1">{{ $booking->property->available_from_label }}</p>
+                            <div class="mt-3 flex flex-wrap gap-2 text-sm">
+                                @if($booking->hasSignedLease())
+                                    <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-red-800 hover:underline">Open signed lease</a>
+                                    <a href="{{ route('documents.signed-lease.show', ['booking' => $booking, 'download' => 1]) }}" class="text-red-800 hover:underline">Download signed lease</a>
+                                @else
+                                    <span class="text-amber-700">Signed lease pending from student</span>
+                                @endif
+                            </div>
                         </div>
                         <div class="text-sm text-gray-600">
-                            Payment: {{ ucfirst($booking->payment->status ?? 'pending') }}
+                            Payment: {{ ucfirst($booking->payment?->status ?? 'pending') }}
                         </div>
                     </div>
                 @empty

@@ -77,12 +77,12 @@
 
                             <div class="grid grid-cols-2 gap-3 mt-5 text-sm">
                                 <div class="bg-gray-50 rounded-xl p-3">
-                                    <p class="text-gray-500">Transport routes</p>
-                                    <p class="font-semibold text-gray-900">{{ count($property->transport_routes ?? []) }}</p>
+                                    <p class="text-gray-500">Available from</p>
+                                    <p class="font-semibold text-gray-900">{{ $property->available_from?->format('d M Y') ?? 'Not set' }}</p>
                                 </div>
                                 <div class="bg-gray-50 rounded-xl p-3">
-                                    <p class="text-gray-500">Nearby amenities</p>
-                                    <p class="font-semibold text-gray-900">{{ count($property->nearby_amenities ?? []) }}</p>
+                                    <p class="text-gray-500">Lease</p>
+                                    <p class="font-semibold text-gray-900">{{ $property->hasLeaseAgreement() ? 'Available' : 'Missing' }}</p>
                                 </div>
                             </div>
 

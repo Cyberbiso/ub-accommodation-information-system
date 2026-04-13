@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('student_documents', function (Blueprint $table) {
-            // Rename the column from file_path to path
-            $table->renameColumn('file_path', 'path');
+            if (Schema::hasColumn('student_documents', 'file_path') && !Schema::hasColumn('student_documents', 'path')) {
+                $table->renameColumn('file_path', 'path');
+            }
         });
     }
 
@@ -23,8 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('student_documents', function (Blueprint $table) {
-            // Rename back if we need to rollback
-            $table->renameColumn('path', 'file_path');
+            if (Schema::hasColumn('student_documents', 'path') && !Schema::hasColumn('student_documents', 'file_path')) {
+                $table->renameColumn('path', 'file_path');
+            }
         });
     }
 };

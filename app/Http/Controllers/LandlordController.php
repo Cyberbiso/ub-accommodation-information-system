@@ -70,6 +70,11 @@ class LandlordController extends Controller
     {
         $landlord = Auth::user();
 
+        if ($landlord->isVerifiedLandlord()) {
+            return redirect()->route('landlord.verification')
+                ->with('error', 'Your verification package is locked after approval. Contact an administrator if details need to change.');
+        }
+
         $request->validate([
             'company_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
@@ -158,6 +163,48 @@ class LandlordController extends Controller
             ->with('success', 'Verification details submitted successfully. We will review your documents in stages before enabling property listings.');
     }
 
+    public function replaceVerificationDocument(Request $request, LandlordVerificationDocument $document)
+    {
+        $landlord = Auth::user();
+
+        abort_unless($document->user_id === $landlord->id, 403);
+
+        if ($landlord->isVerifiedLandlord()) {
+            return back()->with('error', 'Verified packages are locked and cannot be edited.');
+        }
+
+        $validated = $request->validate([
+            'document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:4096',
+        ]);
+
+        $this->storeLandlordVerificationDocument($landlord->id, $document->document_type, $validated['document']);
+        $this->resetLandlordVerificationWorkflow($landlord->fresh());
+
+        return back()->with('success', $document->document_type_label . ' updated successfully.');
+    }
+
+    public function destroyVerificationDocument(LandlordVerificationDocument $document)
+    {
+        $landlord = Auth::user();
+
+        abort_unless($document->user_id === $landlord->id, 403);
+
+        if ($landlord->isVerifiedLandlord()) {
+            return back()->with('error', 'Verified packages are locked and cannot be edited.');
+        }
+
+        $documentLabel = $document->document_type_label;
+
+        if ($document->path && Storage::disk('public')->exists($document->path)) {
+            Storage::disk('public')->delete($document->path);
+        }
+
+        $document->delete();
+        $this->resetLandlordVerificationWorkflow($landlord->fresh());
+
+        return back()->with('success', $documentLabel . ' removed from your verification package.');
+    }
+
     public function properties()
     {
         $properties = Property::where('landlord_id', Auth::id())
@@ -186,6 +233,7 @@ class LandlordController extends Controller
 
         $validated = $this->validateProperty($request);
         $property = Property::create($this->buildPropertyPayload($validated, null, $request));
+        $this->syncPropertyLeaseAgreement($property, $request);
         $this->notifyAdminsAboutPropertySubmission($property);
 
         return redirect()->route('landlord.properties')
@@ -206,8 +254,9 @@ class LandlordController extends Controller
     {
         $this->authorizeProperty($property);
 
-        $validated = $this->validateProperty($request);
+        $validated = $this->validateProperty($request, $property);
         $property->update($this->buildPropertyPayload($validated, $property, $request));
+        $this->syncPropertyLeaseAgreement($property, $request);
         $this->notifyAdminsAboutPropertySubmission($property);
 
         return redirect()->route('landlord.properties')
@@ -354,8 +403,12 @@ class LandlordController extends Controller
         abort_unless($property->landlord_id === Auth::id(), 403);
     }
 
-    private function validateProperty(Request $request): array
+    private function validateProperty(Request $request, ?Property $property = null): array
     {
+        $leaseRule = $property && $property->lease_agreement_path
+            ? 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'
+            : 'required|file|mimes:pdf,jpg,jpeg,png|max:5120';
+
         return $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:5000',
@@ -368,12 +421,14 @@ class LandlordController extends Controller
             'bedrooms' => 'required|integer|min:0',
             'bathrooms' => 'required|integer|min:0',
             'available_units' => 'required|integer|min:1',
+            'available_from' => 'required|date',
             'distance_to_campus_km' => 'nullable|numeric|min:0',
             'google_maps_location' => 'nullable|string|max:2000',
             'amenities_input' => 'nullable|string|max:2000',
             'transport_routes_input' => 'nullable|string|max:2000',
             'nearby_amenities_input' => 'nullable|string|max:2000',
             'navigation_notes' => 'nullable|string|max:2000',
+            'lease_agreement' => $leaseRule,
             'photos' => 'nullable|array|max:6',
             'photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
@@ -406,6 +461,7 @@ class LandlordController extends Controller
             'bedrooms' => $validated['bedrooms'],
             'bathrooms' => $validated['bathrooms'],
             'available_units' => $validated['available_units'],
+            'available_from' => $validated['available_from'],
             'distance_to_campus_km' => $distance,
             'latitude' => $latitude,
             'longitude' => $longitude,
@@ -414,6 +470,9 @@ class LandlordController extends Controller
             'nearby_amenities' => $this->parseList($validated['nearby_amenities_input'] ?? null),
             'navigation_notes' => $validated['navigation_notes'] ?? null,
             'photos' => $storedPhotos,
+            'lease_agreement_path' => $property?->lease_agreement_path,
+            'lease_agreement_original_name' => $property?->lease_agreement_original_name,
+            'lease_agreement_uploaded_at' => $property?->lease_agreement_uploaded_at,
             'is_approved' => false,
             'is_available' => $validated['available_units'] > 0,
             'review_status' => 'pending',
@@ -531,6 +590,26 @@ class LandlordController extends Controller
             ->all();
     }
 
+    private function syncPropertyLeaseAgreement(Property $property, Request $request): void
+    {
+        if (!$request->hasFile('lease_agreement')) {
+            return;
+        }
+
+        if ($property->lease_agreement_path && Storage::disk('public')->exists($property->lease_agreement_path)) {
+            Storage::disk('public')->delete($property->lease_agreement_path);
+        }
+
+        $file = $request->file('lease_agreement');
+        $path = $file->store('property-leases/' . $property->landlord_id . '/' . $property->id, 'public');
+
+        $property->update([
+            'lease_agreement_path' => $path,
+            'lease_agreement_original_name' => $file->getClientOriginalName(),
+            'lease_agreement_uploaded_at' => now(),
+        ]);
+    }
+
     private function notifyAdminsAboutPropertySubmission(Property $property): void
     {
         User::where('role', 'admin')
@@ -579,6 +658,19 @@ class LandlordController extends Controller
             'path' => $path,
             'original_name' => $file->getClientOriginalName(),
             'status' => 'pending',
+        ]);
+    }
+
+    private function resetLandlordVerificationWorkflow(User $landlord): void
+    {
+        $landlord->update([
+            'landlord_verification_status' => 'pending',
+            'landlord_verification_stage' => $this->determineNextVerificationStage($landlord),
+            'landlord_verification_submitted_at' => now(),
+            'landlord_verified_at' => null,
+            'landlord_verification_reviewed_by' => null,
+            'landlord_verification_reviewed_at' => null,
+            'verification_notes' => null,
         ]);
     }
 }

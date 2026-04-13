@@ -62,7 +62,7 @@
                         </div>
                         <div class="flex items-center space-x-3">
                             @if($doc->path)
-                                <a href="{{ Storage::url($doc->path) }}" target="_blank"
+                                <a href="{{ route('documents.student.show', $doc) }}" target="_blank"
                                    class="text-sm text-blue-600 hover:underline border border-blue-300 px-3 py-1 rounded">
                                     <i class="fas fa-eye mr-1"></i>View
                                 </a>

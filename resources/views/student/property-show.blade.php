@@ -64,6 +64,12 @@
                         </div>
                     </div>
 
+                    <div class="bg-amber-50 border border-amber-100 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900">Availability</h3>
+                        <p class="text-gray-700 mt-2">{{ $property->available_from_label }}</p>
+                        <p class="text-sm text-gray-600 mt-2">Bookings can only use move-in dates from {{ \Illuminate\Support\Carbon::parse($property->earliest_move_in_date)->format('d M Y') }} onward.</p>
+                    </div>
+
                     <div class="bg-gray-50 rounded-2xl p-6">
                         <h3 class="text-xl font-bold text-gray-900">Location and access</h3>
                         <p class="text-gray-600 mt-2">{{ $property->full_address }}</p>
@@ -174,11 +180,25 @@
                                 Existing booking: {{ $existingBooking->booking_reference }} ({{ ucfirst(str_replace('_', ' ', $existingBooking->status)) }})
                             </div>
                         @endif
+                        @if($property->hasLeaseAgreement())
+                            <div class="mt-4 bg-gray-50 rounded-xl p-4 text-sm text-gray-700">
+                                <p class="font-semibold text-gray-900">Lease agreement</p>
+                                <p class="mt-2">Review the landlord's lease before booking, then upload the signed copy from your bookings page.</p>
+                                <div class="mt-3 flex flex-wrap gap-3">
+                                    <a href="{{ route('documents.property-lease.show', $property) }}" target="_blank" class="inline-flex items-center gap-2 text-red-800 hover:underline">
+                                        <i class="fas fa-file-signature"></i>Open lease
+                                    </a>
+                                    <a href="{{ route('documents.property-lease.show', ['property' => $property, 'download' => 1]) }}" class="inline-flex items-center gap-2 text-red-800 hover:underline">
+                                        <i class="fas fa-download"></i>Download lease
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
                         <form method="POST" action="{{ route('student.properties.book', $property) }}" class="space-y-4 mt-4">
                             @csrf
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Preferred move-in date</label>
-                                <input type="date" name="move_in_date" min="{{ now()->addDay()->toDateString() }}" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                                <input type="date" name="move_in_date" min="{{ $property->earliest_move_in_date }}" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>

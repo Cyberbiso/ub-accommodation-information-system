@@ -83,6 +83,10 @@
                                 <i class="fas fa-bed text-red-800 w-5"></i>
                                 <span>{{ $property->bedrooms }} bed • {{ $property->bathrooms }} bath</span>
                             </div>
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-calendar-alt text-red-800 w-5"></i>
+                                <span>{{ $property->available_from_label }}</span>
+                            </div>
                             @if($property->distance_to_campus_km)
                                 <div class="flex items-center text-gray-600">
                                     <i class="fas fa-road text-red-800 w-5"></i>

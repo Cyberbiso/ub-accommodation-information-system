@@ -34,7 +34,7 @@
                                     <div class="bg-gray-50 rounded-xl p-4">
                                         <p class="font-semibold text-gray-900">{{ $document->document_type_label }}</p>
                                         <p class="text-sm text-gray-600 mt-1">{{ $document->original_name }}</p>
-                                        <a href="{{ Storage::url($document->path) }}" target="_blank" class="inline-flex mt-3 text-sm text-red-800 hover:underline">View document</a>
+                                        <a href="{{ route('documents.landlord-verification.show', $document) }}" target="_blank" class="inline-flex mt-3 text-sm text-red-800 hover:underline">View document</a>
                                     </div>
                                 @endforeach
                             </div>

@@ -60,6 +60,11 @@
         <input type="number" min="1" name="available_units" value="{{ old('available_units', $property->available_units ?? 1) }}" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
     </div>
     <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Availability Date</label>
+        <input type="date" name="available_from" value="{{ old('available_from', isset($property) && $property->available_from ? $property->available_from->toDateString() : '') }}" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+        <p class="text-xs text-gray-500 mt-2">Students will see this date before booking and cannot choose an earlier move-in date.</p>
+    </div>
+    <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Distance to Campus (km)</label>
         <input type="number" step="0.1" min="0" name="distance_to_campus_km" value="{{ old('distance_to_campus_km', $property->distance_to_campus_km ?? '') }}" class="w-full border border-gray-300 rounded-lg px-4 py-3">
         <p class="text-xs text-gray-500 mt-2">Leave this blank if you paste a Google Maps pin below. We will calculate the distance automatically.</p>
@@ -118,6 +123,17 @@
     <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-700 mb-2">Navigation Notes</label>
         <textarea name="navigation_notes" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="Landmark or gate instructions">{{ old('navigation_notes', $property->navigation_notes ?? '') }}</textarea>
+    </div>
+    <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Lease Agreement</label>
+        <input type="file" name="lease_agreement" class="block w-full text-sm text-gray-700">
+        <p class="text-xs text-gray-500 mt-2">Upload the lease agreement students should download, sign, and submit back with their booking.</p>
+        @if(!empty($property?->lease_agreement_path))
+            <p class="text-xs text-gray-500 mt-2">
+                Current lease:
+                <a href="{{ route('documents.property-lease.show', $property) }}" target="_blank" class="text-red-700 hover:underline">{{ $property->lease_agreement_original_name }}</a>
+            </p>
+        @endif
     </div>
     <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-700 mb-2">Property Photos</label>

@@ -129,7 +129,7 @@
                                     {{ ucfirst($doc->status) }}
                                 </span>
                                 @if($doc->path)
-                                    <a href="{{ Storage::url($doc->path) }}" target="_blank"
+                                    <a href="{{ route('documents.student.show', $doc) }}" target="_blank"
                                        class="text-xs text-blue-600 hover:underline">View</a>
                                 @endif
                             </div>

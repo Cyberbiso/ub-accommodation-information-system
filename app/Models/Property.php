@@ -23,6 +23,7 @@ class Property extends Model
         'bedrooms',
         'bathrooms',
         'available_units',
+        'available_from',
         'distance_to_campus_km',
         'latitude',
         'longitude',
@@ -31,6 +32,9 @@ class Property extends Model
         'nearby_amenities',
         'navigation_notes',
         'photos',
+        'lease_agreement_path',
+        'lease_agreement_original_name',
+        'lease_agreement_uploaded_at',
         'is_available',
         'is_approved',
         'review_status',
@@ -52,6 +56,8 @@ class Property extends Model
         'bedrooms' => 'integer',
         'bathrooms' => 'integer',
         'available_units' => 'integer',
+        'available_from' => 'date',
+        'lease_agreement_uploaded_at' => 'datetime',
         'listed_at' => 'datetime',
     ];
 
@@ -138,6 +144,26 @@ class Property extends Model
         }
 
         return number_format($this->distance_to_campus_km, 1) . ' km from campus';
+    }
+
+    public function getAvailableFromLabelAttribute(): string
+    {
+        if (!$this->available_from) {
+            return 'Availability date not set';
+        }
+
+        return 'Available from ' . $this->available_from->format('d M Y');
+    }
+
+    public function getEarliestMoveInDateAttribute(): string
+    {
+        $tomorrow = now()->addDay()->startOfDay();
+
+        if ($this->available_from && $this->available_from->greaterThan($tomorrow)) {
+            return $this->available_from->toDateString();
+        }
+
+        return $tomorrow->toDateString();
     }
 
     public function getNavigationUrlAttribute(): ?string
@@ -239,6 +265,11 @@ class Property extends Model
     public function hasCoordinates(): bool
     {
         return $this->latitude !== null && $this->longitude !== null;
+    }
+
+    public function hasLeaseAgreement(): bool
+    {
+        return !empty($this->lease_agreement_path);
     }
 
     private function normalizeListValue($value, bool $splitPlainStrings = true): array
