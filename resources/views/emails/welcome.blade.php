@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Welcome to UB Accommodation System</title>
+    <title>Welcome to UniStay</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -44,7 +44,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Welcome to UB Accommodation System</h1>
+        <h1>Welcome to UniStay</h1>
     </div>
     
     <div class="content">

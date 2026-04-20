@@ -9,7 +9,7 @@ use App\Models\Property;
 /**
  * Landing Page Controller
  * 
- * Handles the public-facing homepage of the UB Accommodation Information System.
+ * Handles the public-facing homepage of the UniStay platform.
  * Shows featured accommodations, properties, and system information.
  */
 class LandingPageController extends Controller
