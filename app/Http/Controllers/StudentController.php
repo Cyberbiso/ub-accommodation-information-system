@@ -453,6 +453,7 @@ class StudentController extends Controller
         });
 
         return redirect()->route('student.bookings', ['booking' => $booking->id])
+            ->with('selected_booking_id', $booking->id)
             ->with('success', 'Property selected successfully. Complete payment to confirm your off-campus accommodation.');
     }
 
@@ -500,10 +501,15 @@ class StudentController extends Controller
             ->latest();
 
         $selectedBooking = null;
-        $hasBookingFilter = $request->filled('booking');
+        $selectedBookingId = $request->integer('booking');
+
+        if (!$selectedBookingId) {
+            $selectedBookingId = (int) $request->session()->pull('selected_booking_id');
+        }
+
+        $hasBookingFilter = $selectedBookingId > 0;
 
         if ($hasBookingFilter) {
-            $selectedBookingId = (int) $request->query('booking');
             $query->whereKey($selectedBookingId);
         }
 
@@ -608,7 +614,8 @@ class StudentController extends Controller
         }
 
         if ($payment->payable instanceof PropertyBooking && $payment->payable->property->available_units < 1) {
-            return redirect()->route('student.bookings')
+            return redirect()->route('student.bookings', ['booking' => $payment->payable->id])
+                ->with('selected_booking_id', $payment->payable->id)
                 ->with('error', 'This property is no longer available. Please choose another listing.');
         }
 
@@ -642,7 +649,8 @@ class StudentController extends Controller
             });
         } catch (RuntimeException $exception) {
             if ($exception->getMessage() === 'property_unavailable') {
-                return redirect()->route('student.bookings')
+                return redirect()->route('student.bookings', ['booking' => $payment->payable->id])
+                    ->with('selected_booking_id', $payment->payable->id)
                     ->with('error', 'This property is no longer available. Please choose another listing.');
             }
 

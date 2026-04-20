@@ -47,7 +47,13 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 @foreach($properties as $property)
                     <div class="bg-white rounded-2xl shadow overflow-hidden">
-                        <div class="h-48 bg-gradient-to-br from-red-900 via-red-800 to-amber-600 relative">
+                        <div class="h-52 relative overflow-hidden">
+                            @if(count($property->photo_urls))
+                                <img src="{{ $property->first_photo }}" alt="{{ $property->title }}" class="absolute inset-0 h-full w-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-gray-950/85 via-red-950/35 to-transparent"></div>
+                            @else
+                                <div class="absolute inset-0 bg-gradient-to-br from-red-900 via-red-800 to-amber-600"></div>
+                            @endif
                             <div class="absolute inset-0 p-6 flex flex-col justify-between text-white">
                                 <div class="flex items-center justify-between">
                                     <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur">{{ ucfirst($property->type) }}</span>
@@ -56,6 +62,7 @@
                                     </span>
                                 </div>
                                 <div>
+                                    <p class="text-xs uppercase tracking-[0.2em] text-white/80">Property preview</p>
                                     <p class="text-sm text-red-100">{{ $property->city }}</p>
                                     <h3 class="text-2xl font-bold mt-2">{{ $property->title }}</h3>
                                 </div>
