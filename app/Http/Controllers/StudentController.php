@@ -405,7 +405,7 @@ class StudentController extends Controller
             return back()->with('error', 'You already have an active booking for this property.');
         }
 
-        DB::transaction(function () use ($request, $property) {
+        $booking = DB::transaction(function () use ($request, $property) {
             $depositAmount = $property->deposit_amount ?? $property->monthly_rent;
             $totalAmount = $property->monthly_rent + $depositAmount;
 
@@ -448,9 +448,11 @@ class StudentController extends Controller
                 'info',
                 Auth::id()
             );
+
+            return $booking;
         });
 
-        return redirect()->route('student.bookings')
+        return redirect()->route('student.bookings', ['booking' => $booking->id])
             ->with('success', 'Property selected successfully. Complete payment to confirm your off-campus accommodation.');
     }
 
@@ -491,14 +493,24 @@ class StudentController extends Controller
         return back()->with('success', 'Signed lease uploaded successfully.');
     }
 
-    public function bookings()
+    public function bookings(Request $request)
     {
-        $bookings = PropertyBooking::where('student_id', Auth::id())
+        $query = PropertyBooking::where('student_id', Auth::id())
             ->with(['property', 'payment'])
-            ->latest()
-            ->paginate(10);
+            ->latest();
 
-        return view('student.bookings', compact('bookings'));
+        $selectedBooking = null;
+        $hasBookingFilter = $request->filled('booking');
+
+        if ($hasBookingFilter) {
+            $selectedBookingId = (int) $request->query('booking');
+            $query->whereKey($selectedBookingId);
+        }
+
+        $bookings = $query->paginate(10)->withQueryString();
+        $selectedBooking = $hasBookingFilter ? $bookings->first() : null;
+
+        return view('student.bookings', compact('bookings', 'selectedBooking', 'hasBookingFilter'));
     }
 
     public function viewingRequests(Request $request)

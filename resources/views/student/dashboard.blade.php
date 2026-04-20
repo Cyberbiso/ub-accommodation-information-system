@@ -149,9 +149,20 @@
                 <div class="divide-y divide-gray-100">
                     @forelse($recentBookings as $booking)
                         <div class="p-5 flex items-center justify-between gap-4">
-                            <div>
-                                <p class="font-semibold text-gray-900">{{ $booking->property->title }}</p>
-                                <p class="text-sm text-gray-600">{{ $booking->booking_reference }} • Move in {{ $booking->move_in_date?->format('d M Y') ?? 'Not set' }}</p>
+                            <div class="flex items-center gap-4 min-w-0">
+                                <a href="{{ route('student.properties.show', $booking->property) }}" class="block h-16 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+                                    @if(count($booking->property->photo_urls))
+                                        <img src="{{ $booking->property->first_photo }}" alt="{{ $booking->property->title }}" class="h-full w-full object-cover">
+                                    @else
+                                        <div class="h-full w-full bg-gradient-to-br from-red-900 via-red-800 to-amber-600 flex items-center justify-center text-white">
+                                            <i class="fas fa-house-user"></i>
+                                        </div>
+                                    @endif
+                                </a>
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-gray-900">{{ $booking->property->title }}</p>
+                                    <p class="text-sm text-gray-600">{{ $booking->booking_reference }} • Move in {{ $booking->move_in_date?->format('d M Y') ?? 'Not set' }}</p>
+                                </div>
                             </div>
                             <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $booking->status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
                                 {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
