@@ -201,33 +201,58 @@
                                 </div>
                             </div>
                         @endif
-                        <form method="POST" action="{{ route('student.properties.book', $property) }}" class="space-y-4 mt-4">
-                            @csrf
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Preferred move-in date</label>
-                                <input type="date" name="move_in_date" min="{{ $property->earliest_move_in_date }}" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                        @if($existingBooking)
+                            <div class="mt-4 space-y-3">
+                                @if($existingBooking->status === 'pending_payment')
+                                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-900">
+                                        This property is already reserved in your name, but payment is still pending.
+                                    </div>
+                                    <a href="{{ route('student.bookings', ['booking' => $existingBooking->id]) }}" class="block w-full text-center bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
+                                        Continue payment for this booking
+                                    </a>
+                                    @if($existingBooking->payment)
+                                        <a href="{{ route('student.payments') }}" class="block w-full text-center border border-gray-300 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                            Open all pending payments
+                                        </a>
+                                    @endif
+                                @else
+                                    <div class="bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-900">
+                                        This property is already confirmed in your bookings.
+                                    </div>
+                                    <a href="{{ route('student.bookings', ['booking' => $existingBooking->id]) }}" class="block w-full text-center border border-gray-300 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                        Open this booking
+                                    </a>
+                                @endif
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                        @else
+                            <form method="POST" action="{{ route('student.properties.book', $property) }}" class="space-y-4 mt-4">
+                                @csrf
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Lease months</label>
-                                    <input type="number" name="lease_months" value="12" min="3" max="24" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Preferred move-in date</label>
+                                    <input type="date" name="move_in_date" min="{{ $property->earliest_move_in_date }}" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Lease months</label>
+                                        <input type="number" name="lease_months" value="12" min="3" max="24" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Occupants</label>
+                                        <input type="number" name="occupants" value="1" min="1" max="8" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Occupants</label>
-                                    <input type="number" name="occupants" value="1" min="1" max="8" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Special requests</label>
+                                    <textarea name="special_requests" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="Accessibility, furnishing, or move-in notes"></textarea>
                                 </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Special requests</label>
-                                <textarea name="special_requests" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="Accessibility, furnishing, or move-in notes"></textarea>
-                            </div>
-                            <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-700">
-                                Total payable now: <span class="font-bold text-gray-900">P{{ number_format($property->monthly_rent + ($property->deposit_amount ?? $property->monthly_rent), 2) }}</span>
-                            </div>
-                            <button type="submit" class="w-full bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
-                                Select and pay for this property
-                            </button>
-                        </form>
+                                <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-700">
+                                    Total payable now: <span class="font-bold text-gray-900">P{{ number_format($property->monthly_rent + ($property->deposit_amount ?? $property->monthly_rent), 2) }}</span>
+                                </div>
+                                <button type="submit" class="w-full bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
+                                    Select and pay for this property
+                                </button>
+                            </form>
+                        @endif
                     </div>
 
                     <div class="bg-white border border-gray-200 rounded-2xl p-6">

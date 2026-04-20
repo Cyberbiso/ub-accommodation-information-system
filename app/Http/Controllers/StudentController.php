@@ -317,6 +317,7 @@ class StudentController extends Controller
         $existingBooking = PropertyBooking::where('student_id', Auth::id())
             ->where('property_id', $property->id)
             ->whereIn('status', ['pending_payment', 'confirmed'])
+            ->with('payment')
             ->latest()
             ->first();
         $existingEnquiry = PropertyEnquiry::where('student_id', Auth::id())
@@ -399,10 +400,17 @@ class StudentController extends Controller
         $existingBooking = PropertyBooking::where('student_id', Auth::id())
             ->where('property_id', $property->id)
             ->whereIn('status', ['pending_payment', 'confirmed'])
+            ->with('payment')
             ->first();
 
         if ($existingBooking) {
-            return back()->with('error', 'You already have an active booking for this property.');
+            $message = $existingBooking->status === 'pending_payment'
+                ? 'You already have an unpaid booking for this property. Continue payment below.'
+                : 'You have already booked this property.';
+
+            return redirect()->route('student.bookings', ['booking' => $existingBooking->id])
+                ->with('selected_booking_id', $existingBooking->id)
+                ->with('success', $message);
         }
 
         $booking = DB::transaction(function () use ($request, $property) {
