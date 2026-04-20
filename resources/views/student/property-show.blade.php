@@ -110,7 +110,7 @@
                                 @endphp
                                 <div class="flex flex-wrap gap-2">
                                     <button type="button" data-preview="{{ $propertyPreviewUrl }}" class="map-preview-toggle px-4 py-2 rounded-lg bg-red-800 text-sm font-semibold text-white">Property preview</button>
-                                    <button type="button" data-preview="{{ $campusRoutePreviewUrl }}" class="map-preview-toggle px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700">Route from campus</button>
+                                    <button type="button" data-preview="{{ $campusRoutePreviewUrl }}" class="map-preview-toggle px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700">Preview route from campus</button>
                                 </div>
                             @endif
                         </div>
@@ -132,10 +132,17 @@
                                 <a href="{{ $property->navigation_url }}" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
                                     <i class="fas fa-route"></i>Open in Google Maps
                                 </a>
+                                <a href="{{ $property->campus_route_url }}" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 border border-red-800 text-red-800 px-4 py-3 rounded-lg font-semibold hover:bg-red-50 transition">
+                                    <i class="fas fa-school"></i>Open route from campus
+                                </a>
                                 <button type="button" id="gpsNavigateBtn" class="inline-flex items-center gap-2 border border-gray-300 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
                                     <i class="fas fa-location-arrow"></i>Navigate from my location
                                 </button>
                             </div>
+                            <p class="mt-3 text-sm text-gray-500">
+                                Campus route origin: {{ $campus['latitude'] }}, {{ $campus['longitude'] }}.
+                                Property destination: {{ $property->latitude }}, {{ $property->longitude }}.
+                            </p>
                         @else
                             <div class="mt-6 rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
                                 GPS coordinates have not been added to this listing yet.

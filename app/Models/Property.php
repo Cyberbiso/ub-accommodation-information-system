@@ -176,6 +176,23 @@ class Property extends Model
             . $this->latitude . ',' . $this->longitude;
     }
 
+    public function getCampusRouteUrlAttribute(): ?string
+    {
+        if (!$this->hasCoordinates()) {
+            return null;
+        }
+
+        $campus = config('campus');
+        $origin = $campus['latitude'] . ',' . $campus['longitude'];
+        $destination = $this->latitude . ',' . $this->longitude;
+
+        return 'https://www.google.com/maps/dir/?api=1&origin='
+            . $origin
+            . '&destination='
+            . $destination
+            . '&travelmode=driving';
+    }
+
     public function landlord()
     {
         return $this->belongsTo(User::class, 'landlord_id');
