@@ -231,15 +231,18 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             @php
+            $studentPortalUrl = auth()->check() && auth()->user()->isStudent()
+                ? route('student.dashboard')
+                : route('login');
             $quickLinks = [
-                ['title' => 'UB Student Portal', 'desc' => 'Access your academic records, results, and registration.', 'url' => 'https://sims.ub.bw', 'icon' => 'fa-graduation-cap', 'color' => 'bg-blue-600'],
-                ['title' => 'UniStay — Find Housing', 'desc' => 'Browse verified off-campus properties near UB.', 'url' => url('/properties'), 'icon' => 'fa-home', 'color' => 'bg-red-800'],
-                ['title' => 'Immigration Guide', 'desc' => 'Study permit requirements and downloadable forms.', 'url' => route('information.immigration'), 'icon' => 'fa-passport', 'color' => 'bg-green-700'],
-                ['title' => 'UB Official Website', 'desc' => 'News, academic calendar, and university contacts.', 'url' => 'https://www.ub.bw', 'icon' => 'fa-university', 'color' => 'bg-purple-700'],
+                ['title' => 'My Dashboard', 'desc' => 'Access your bookings, applications, and account.', 'url' => $studentPortalUrl, 'icon' => 'fa-graduation-cap', 'color' => 'bg-blue-600', 'external' => false],
+                ['title' => 'UniStay — Find Housing', 'desc' => 'Browse verified off-campus properties near UB.', 'url' => url('/properties'), 'icon' => 'fa-home', 'color' => 'bg-red-800', 'external' => false],
+                ['title' => 'Immigration Guide', 'desc' => 'Study permit requirements and downloadable forms.', 'url' => route('information.immigration'), 'icon' => 'fa-passport', 'color' => 'bg-green-700', 'external' => false],
+                ['title' => 'UB Official Website', 'desc' => 'News, academic calendar, and university contacts.', 'url' => 'https://www.ub.bw', 'icon' => 'fa-university', 'color' => 'bg-purple-700', 'external' => true],
             ];
             @endphp
             @foreach($quickLinks as $link)
-            <a href="{{ $link['url'] }}" target="{{ str_starts_with($link['url'], 'http') ? '_blank' : '_self' }}" rel="noopener" class="bg-white rounded-2xl shadow border border-gray-100 p-5 hover:shadow-md transition flex items-start gap-4 group">
+            <a href="{{ $link['url'] }}" target="{{ $link['external'] ? '_blank' : '_self' }}" rel="noopener" class="bg-white rounded-2xl shadow border border-gray-100 p-5 hover:shadow-md transition flex items-start gap-4 group">
                 <div class="w-10 h-10 rounded-xl {{ $link['color'] }} flex items-center justify-center shrink-0">
                     <i class="fas {{ $link['icon'] }} text-white text-sm"></i>
                 </div>

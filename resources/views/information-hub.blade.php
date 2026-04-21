@@ -16,7 +16,7 @@
                     <a href="#quick-links" class="bg-white text-red-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
                         <i class="fas fa-compass mr-2"></i>Explore
                     </a>
-                    <a href="#resources" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-red-800 transition">
+                    <a href="{{ route('information.resources') }}" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-red-800 transition">
                         <i class="fas fa-download mr-2"></i>Resources
                     </a>
                 </div>
