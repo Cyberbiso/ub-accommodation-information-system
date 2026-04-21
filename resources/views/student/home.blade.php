@@ -151,19 +151,15 @@
                         </h2>
                     </div>
                     <div class="p-4">
-                        <a href="{{ route('information.campus-directory') }}" 
+                        <a href="{{ route('information.campus-directory') }}"
                            class="block p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 transition">
                             <i class="fas fa-map-marked-alt text-red-800 mr-2"></i> Campus Directory
                         </a>
-                        <a href="{{ route('information.immigration') }}" 
+                        <a href="{{ route('information.immigration') }}"
                            class="block p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 transition">
                             <i class="fas fa-passport text-red-800 mr-2"></i> Immigration
                         </a>
-                        <a href="{{ route('information.checklist') }}" 
-                           class="block p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 transition">
-                            <i class="fas fa-clipboard-list text-red-800 mr-2"></i> Checklist
-                        </a>
-                        <a href="{{ route('information.resources') }}" 
+                        <a href="{{ route('information.resources') }}"
                            class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                             <i class="fas fa-book-open text-red-800 mr-2"></i> Resources
                         </a>

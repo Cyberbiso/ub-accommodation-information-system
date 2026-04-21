@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <a href="{{ route('student.apply.form') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
                 <p class="text-sm font-semibold text-red-700">On-Campus</p>
                 <h3 class="text-xl font-bold text-gray-900 mt-2">Apply for Housing</h3>
@@ -87,12 +87,22 @@
             <a href="{{ route('student.support') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
                 <p class="text-sm font-semibold text-red-700">Support</p>
                 <h3 class="text-xl font-bold text-gray-900 mt-2">Virtual Help Desk</h3>
-                <p class="text-gray-600 mt-2 text-sm">Get help with immigration, registration, accommodation, and onboarding.</p>
+                <p class="text-gray-600 mt-2 text-sm">Get help with registration, accommodation, and other queries.</p>
             </a>
             <a href="{{ route('student.enquiries') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
                 <p class="text-sm font-semibold text-red-700">Messages</p>
                 <h3 class="text-xl font-bold text-gray-900 mt-2">Track Enquiries</h3>
                 <p class="text-gray-600 mt-2 text-sm">Follow up on questions sent to landlords about properties.</p>
+            </a>
+            <a href="{{ route('information.immigration') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">International</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Immigration Guide</h3>
+                <p class="text-gray-600 mt-2 text-sm">Visa requirements, study permits, and deadlines for international students.</p>
+            </a>
+            <a href="{{ route('information.resources') }}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <p class="text-sm font-semibold text-red-700">Resources</p>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Student Resources</h3>
+                <p class="text-gray-600 mt-2 text-sm">Download guides, forms, and access helpful links for your studies.</p>
             </a>
         </div>
 

@@ -10,7 +10,7 @@
             <div>
                 <h1 class="text-4xl md:text-5xl font-bold mb-4">Information Hub</h1>
                 <p class="text-xl mb-6 max-w-2xl">
-                    Everything you need to know before and after arrival – campus offices, immigration, checklists, and resources.
+                    Everything you need to know before and after arrival – campus offices, immigration guides, and resources.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <a href="#quick-links" class="bg-white text-red-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
@@ -33,18 +33,14 @@
 <!-- Statistics -->
 <div class="bg-gray-50 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
             <div class="text-center">
                 <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">{{ $stats['offices'] }}+</div>
                 <div class="text-gray-600">Campus Offices</div>
             </div>
             <div class="text-center">
                 <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">{{ $stats['requirements'] }}+</div>
-                <div class="text-gray-600">Requirements</div>
-            </div>
-            <div class="text-center">
-                <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">{{ $stats['checklist'] }}+</div>
-                <div class="text-gray-600">Checklist Items</div>
+                <div class="text-gray-600">Immigration Guides</div>
             </div>
             <div class="text-center">
                 <div class="text-3xl md:text-4xl font-bold text-red-800 mb-2">{{ $stats['resources'] }}+</div>
@@ -62,7 +58,7 @@
             Find what you need quickly with our organized information sections.
         </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Campus Directory Card -->
             <a href="{{ route('information.campus-directory') }}" class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition group">
                 <div class="h-2 bg-red-800"></div>
@@ -86,24 +82,9 @@
                         <i class="fas fa-passport"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Immigration</h3>
-                    <p class="text-gray-600 mb-4">Visa requirements, permits, and important deadlines.</p>
+                    <p class="text-gray-600 mb-4">Visa requirements, study permits, and important deadlines for international students.</p>
                     <span class="text-red-800 font-medium inline-flex items-center">
                         Learn More <i class="fas fa-arrow-right ml-2 text-sm"></i>
-                    </span>
-                </div>
-            </a>
-
-            <!-- Onboarding Checklist Card -->
-            <a href="{{ route('information.checklist') }}" class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition group">
-                <div class="h-2 bg-red-800"></div>
-                <div class="p-6">
-                    <div class="text-red-800 text-4xl mb-4 group-hover:scale-110 transition">
-                        <i class="fas fa-clipboard-list"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Onboarding Checklist</h3>
-                    <p class="text-gray-600 mb-4">Step-by-step guide for before and after arrival.</p>
-                    <span class="text-red-800 font-medium inline-flex items-center">
-                        View Checklist <i class="fas fa-arrow-right ml-2 text-sm"></i>
                     </span>
                 </div>
             </a>
@@ -116,9 +97,9 @@
                         <i class="fas fa-book-open"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Resources</h3>
-                    <p class="text-gray-600 mb-4">Downloadable guides, forms, and helpful links.</p>
+                    <p class="text-gray-600 mb-4">Downloadable guides, forms, and helpful links for new and returning students.</p>
                     <span class="text-red-800 font-medium inline-flex items-center">
-                        Browse <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                        Browse Resources <i class="fas fa-arrow-right ml-2 text-sm"></i>
                     </span>
                 </div>
             </a>
