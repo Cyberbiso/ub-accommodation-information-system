@@ -9,6 +9,12 @@ class PropertyBooking extends Model
 {
     use HasFactory;
 
+    const STATUS_PENDING_LANDLORD_REVIEW   = 'pending_landlord_review';
+    const STATUS_APPROVED_AWAITING_LEASE   = 'approved_awaiting_lease';
+    const STATUS_APPROVED_AWAITING_PAYMENT = 'approved_awaiting_payment';
+    const STATUS_CONFIRMED                 = 'confirmed';
+    const STATUS_REJECTED                  = 'rejected';
+
     protected $fillable = [
         'booking_reference',
         'student_id',
@@ -19,6 +25,8 @@ class PropertyBooking extends Model
         'lease_months',
         'occupants',
         'special_requests',
+        'landlord_rejection_note',
+        'landlord_reviewed_at',
         'quoted_rent',
         'deposit_amount',
         'total_amount',
@@ -31,6 +39,7 @@ class PropertyBooking extends Model
     protected $casts = [
         'move_in_date' => 'date',
         'signed_lease_submitted_at' => 'datetime',
+        'landlord_reviewed_at' => 'datetime',
         'paid_at' => 'datetime',
         'quoted_rent' => 'float',
         'deposit_amount' => 'float',
@@ -59,9 +68,81 @@ class PropertyBooking extends Model
         return $this->morphOne(Payment::class, 'payable');
     }
 
+    // ─── Status helpers ───────────────────────────────────────────────────────
+
+    public function isPendingLandlordReview(): bool
+    {
+        return $this->status === self::STATUS_PENDING_LANDLORD_REVIEW;
+    }
+
+    public function isApprovedAwaitingLease(): bool
+    {
+        return $this->status === self::STATUS_APPROVED_AWAITING_LEASE;
+    }
+
+    public function isApprovedAwaitingPayment(): bool
+    {
+        return $this->status === self::STATUS_APPROVED_AWAITING_PAYMENT;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
+    }
+
+    public function isActive(): bool
+    {
+        return !in_array($this->status, [self::STATUS_CONFIRMED, self::STATUS_REJECTED]);
+    }
+
+    // ─── Landlord actions ─────────────────────────────────────────────────────
+
+    public function approveByLandlord(): bool
+    {
+        if ($this->status !== self::STATUS_PENDING_LANDLORD_REVIEW) {
+            return false;
+        }
+
+        return $this->update([
+            'status' => self::STATUS_APPROVED_AWAITING_LEASE,
+            'landlord_reviewed_at' => now(),
+        ]);
+    }
+
+    public function rejectByLandlord(?string $note = null): bool
+    {
+        if ($this->status !== self::STATUS_PENDING_LANDLORD_REVIEW) {
+            return false;
+        }
+
+        return $this->update([
+            'status' => self::STATUS_REJECTED,
+            'landlord_rejection_note' => $note,
+            'landlord_reviewed_at' => now(),
+        ]);
+    }
+
+    // ─── Student lease submission ──────────────────────────────────────────────
+
+    public function markLeaseSubmitted(): bool
+    {
+        if ($this->status !== self::STATUS_APPROVED_AWAITING_LEASE) {
+            return false;
+        }
+
+        return $this->update(['status' => self::STATUS_APPROVED_AWAITING_PAYMENT]);
+    }
+
+    // ─── Payment confirmation ──────────────────────────────────────────────────
+
     public function confirm(): bool
     {
-        if ($this->status === 'confirmed') {
+        if ($this->status === self::STATUS_CONFIRMED) {
             return true;
         }
 
@@ -85,7 +166,7 @@ class PropertyBooking extends Model
         ]);
 
         return $this->update([
-            'status' => 'confirmed',
+            'status' => self::STATUS_CONFIRMED,
             'paid_at' => now(),
         ]);
     }

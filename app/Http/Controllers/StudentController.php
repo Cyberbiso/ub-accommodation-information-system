@@ -399,14 +399,14 @@ class StudentController extends Controller
 
         $existingBooking = PropertyBooking::where('student_id', Auth::id())
             ->where('property_id', $property->id)
-            ->whereIn('status', ['pending_payment', 'confirmed'])
+            ->whereNotIn('status', [PropertyBooking::STATUS_REJECTED])
             ->with('payment')
             ->first();
 
         if ($existingBooking) {
-            $message = $existingBooking->status === 'pending_payment'
-                ? 'You already have an unpaid booking for this property. Continue payment below.'
-                : 'You have already booked this property.';
+            $message = $existingBooking->isConfirmed()
+                ? 'You have already booked this property.'
+                : 'You already have an active booking request for this property.';
 
             return redirect()->route('student.bookings', ['booking' => $existingBooking->id])
                 ->with('selected_booking_id', $existingBooking->id)
@@ -422,7 +422,7 @@ class StudentController extends Controller
                 'student_id' => Auth::id(),
                 'property_id' => $property->id,
                 'landlord_id' => $property->landlord_id,
-                'status' => 'pending_payment',
+                'status' => PropertyBooking::STATUS_PENDING_LANDLORD_REVIEW,
                 'move_in_date' => $request->move_in_date,
                 'lease_months' => $request->lease_months,
                 'occupants' => $request->occupants,
@@ -450,8 +450,8 @@ class StudentController extends Controller
 
             SystemNotification::notifyUser(
                 $property->landlord_id,
-                'New property booking selected',
-                Auth::user()->name . ' selected ' . $property->title . ' and is now proceeding to payment.',
+                'New booking request',
+                Auth::user()->name . ' has requested to book ' . $property->title . '. Please review and approve or reject.',
                 route('landlord.bookings'),
                 'info',
                 Auth::id()
@@ -462,12 +462,16 @@ class StudentController extends Controller
 
         return redirect()->route('student.bookings', ['booking' => $booking->id])
             ->with('selected_booking_id', $booking->id)
-            ->with('success', 'Property selected successfully. Complete payment to confirm your off-campus accommodation.');
+            ->with('success', 'Booking request submitted. The landlord will review your request before you proceed.');
     }
 
     public function uploadSignedLease(Request $request, PropertyBooking $booking)
     {
         abort_unless($booking->student_id === Auth::id(), 403);
+
+        if (!$booking->isApprovedAwaitingLease()) {
+            return back()->with('error', 'You can only upload a signed lease after the landlord has approved your booking request.');
+        }
 
         if (!$booking->property || !$booking->property->hasLeaseAgreement()) {
             return back()->with('error', 'This property does not have a lease agreement available yet.');
@@ -490,16 +494,18 @@ class StudentController extends Controller
             'signed_lease_submitted_at' => now(),
         ]);
 
+        $booking->markLeaseSubmitted();
+
         SystemNotification::notifyUser(
             $booking->landlord_id,
             'Signed lease submitted',
-            Auth::user()->name . ' uploaded a signed lease for booking ' . $booking->booking_reference . '.',
+            Auth::user()->name . ' uploaded a signed lease for booking ' . $booking->booking_reference . '. They can now proceed to payment.',
             route('landlord.bookings'),
             'info',
             Auth::id()
         );
 
-        return back()->with('success', 'Signed lease uploaded successfully.');
+        return back()->with('success', 'Signed lease uploaded. You can now proceed to payment.');
     }
 
     public function bookings(Request $request)
@@ -621,10 +627,18 @@ class StudentController extends Controller
                 ->with('error', 'This payment has already been processed.');
         }
 
-        if ($payment->payable instanceof PropertyBooking && $payment->payable->property->available_units < 1) {
-            return redirect()->route('student.bookings', ['booking' => $payment->payable->id])
-                ->with('selected_booking_id', $payment->payable->id)
-                ->with('error', 'This property is no longer available. Please choose another listing.');
+        if ($payment->payable instanceof PropertyBooking) {
+            if (!$payment->payable->isApprovedAwaitingPayment()) {
+                return redirect()->route('student.bookings', ['booking' => $payment->payable->id])
+                    ->with('selected_booking_id', $payment->payable->id)
+                    ->with('error', 'Payment is not available at this stage of your booking.');
+            }
+
+            if ($payment->payable->property->available_units < 1) {
+                return redirect()->route('student.bookings', ['booking' => $payment->payable->id])
+                    ->with('selected_booking_id', $payment->payable->id)
+                    ->with('error', 'This property is no longer available. Please choose another listing.');
+            }
         }
 
         $methodCapture = $this->buildPaymentMethodCapture($validated);

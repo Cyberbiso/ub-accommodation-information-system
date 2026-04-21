@@ -14,7 +14,7 @@
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Selected off-campus accommodation</h1>
                     <p class="text-gray-600 mt-1">
-                        {{ $selectedBooking ? 'Review and pay for the property you just selected.' : 'Pay pending selections to confirm your booking.' }}
+                        {{ $selectedBooking ? 'Track your booking progress below.' : 'Track all your off-campus booking requests.' }}
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-3">
@@ -27,7 +27,27 @@
 
             <div class="divide-y divide-gray-100">
                 @forelse($bookings as $booking)
+                    @php
+                        $statusColors = [
+                            'pending_landlord_review'   => 'bg-yellow-100 text-yellow-800',
+                            'approved_awaiting_lease'   => 'bg-blue-100 text-blue-800',
+                            'approved_awaiting_payment' => 'bg-indigo-100 text-indigo-800',
+                            'confirmed'                 => 'bg-green-100 text-green-800',
+                            'rejected'                  => 'bg-red-100 text-red-800',
+                        ];
+                        $statusLabels = [
+                            'pending_landlord_review'   => 'Awaiting Landlord Review',
+                            'approved_awaiting_lease'   => 'Approved — Sign Lease',
+                            'approved_awaiting_payment' => 'Lease Signed — Proceed to Payment',
+                            'confirmed'                 => 'Confirmed',
+                            'rejected'                  => 'Rejected',
+                        ];
+                        $badgeClass = $statusColors[$booking->status] ?? 'bg-gray-100 text-gray-800';
+                        $statusLabel = $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status));
+                    @endphp
+
                     <div class="p-6 grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        {{-- Left: property info --}}
                         <div class="xl:col-span-2">
                             <div class="flex flex-col md:flex-row gap-5">
                                 <div class="w-full md:w-56 shrink-0">
@@ -44,11 +64,12 @@
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-center gap-3 flex-wrap">
                                         <h3 class="text-xl font-bold text-gray-900">{{ $booking->property->title }}</h3>
-                                        <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $booking->status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                            {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $badgeClass }}">
+                                            {{ $statusLabel }}
                                         </span>
                                     </div>
                                     <p class="text-sm text-gray-600 mt-2">{{ $booking->booking_reference }} • {{ $booking->property->city }}</p>
+
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-sm">
                                         <div class="bg-gray-50 rounded-xl p-3">
                                             <p class="text-gray-500">Move in</p>
@@ -67,59 +88,106 @@
                                             <p class="font-semibold text-gray-900">P{{ number_format($booking->deposit_amount, 2) }}</p>
                                         </div>
                                     </div>
-                                    <div class="mt-4 flex flex-wrap gap-3 text-sm">
-                                        <a href="{{ route('student.properties.show', $booking->property) }}" class="inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50 transition">
+
+                                    <div class="mt-4">
+                                        <a href="{{ route('student.properties.show', $booking->property) }}" class="inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
                                             Open property
                                         </a>
                                     </div>
-                                    <div class="mt-4 rounded-xl border border-gray-200 p-4">
-                                        <p class="text-sm font-semibold text-gray-900">Lease workflow</p>
-                                        <p class="text-sm text-gray-600 mt-2">{{ $booking->property->available_from_label }}</p>
-                                        @if($booking->property->hasLeaseAgreement())
-                                            <div class="mt-3 flex flex-wrap gap-3 text-sm">
-                                                <a href="{{ route('documents.property-lease.show', $booking->property) }}" target="_blank" class="text-red-800 hover:underline">Open landlord lease</a>
-                                                <a href="{{ route('documents.property-lease.show', ['property' => $booking->property, 'download' => 1]) }}" class="text-red-800 hover:underline">Download lease</a>
-                                                @if($booking->hasSignedLease())
-                                                    <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-red-800 hover:underline">Open submitted signed lease</a>
-                                                    <a href="{{ route('documents.signed-lease.show', ['booking' => $booking, 'download' => 1]) }}" class="text-red-800 hover:underline">Download submitted signed lease</a>
-                                                @endif
-                                            </div>
 
-                                            <form method="POST" action="{{ route('student.bookings.signed-lease.upload', $booking) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
-                                                @csrf
-                                                <div>
-                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload signed lease</label>
-                                                    <input type="file" name="signed_lease" class="block w-full text-sm text-gray-700" required>
+                                    {{-- ── Step-based action panel ── --}}
+                                    <div class="mt-4 rounded-xl border border-gray-200 p-4 space-y-3">
+
+                                        {{-- STEP 1: Awaiting landlord review --}}
+                                        @if($booking->isPendingLandlordReview())
+                                            <p class="text-sm font-semibold text-gray-900">Step 1 of 3 — Awaiting landlord review</p>
+                                            <p class="text-sm text-gray-600">Your request has been sent to the landlord. You will be notified once they review it.</p>
+
+                                        {{-- STEP 2: Approved — upload signed lease --}}
+                                        @elseif($booking->isApprovedAwaitingLease())
+                                            <p class="text-sm font-semibold text-gray-900">Step 2 of 3 — Sign &amp; upload the lease</p>
+                                            <p class="text-sm text-green-700">Your booking request was approved! Download the lease, sign it, then upload your signed copy below.</p>
+
+                                            @if($booking->property->hasLeaseAgreement())
+                                                <div class="flex flex-wrap gap-3 text-sm">
+                                                    <a href="{{ route('documents.property-lease.show', $booking->property) }}" target="_blank" class="text-red-800 hover:underline">Open lease agreement</a>
+                                                    <a href="{{ route('documents.property-lease.show', ['property' => $booking->property, 'download' => 1]) }}" class="text-red-800 hover:underline">Download lease</a>
                                                 </div>
-                                                <button type="submit" class="inline-flex items-center rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 transition">
-                                                    {{ $booking->hasSignedLease() ? 'Replace signed lease' : 'Submit signed lease' }}
-                                                </button>
-                                                @if($booking->signed_lease_submitted_at)
-                                                    <p class="text-xs text-gray-500">Last submitted {{ $booking->signed_lease_submitted_at->diffForHumans() }}</p>
-                                                @endif
-                                            </form>
-                                        @else
-                                            <p class="text-sm text-amber-700 mt-2">The landlord has not uploaded a lease agreement for this property yet.</p>
+
+                                                <form method="POST" action="{{ route('student.bookings.signed-lease.upload', $booking) }}" enctype="multipart/form-data" class="space-y-3 pt-2">
+                                                    @csrf
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-700 mb-1">Upload signed lease</label>
+                                                        <input type="file" name="signed_lease" class="block w-full text-sm text-gray-700" required>
+                                                        <p class="text-xs text-gray-500 mt-1">PDF, JPG or PNG — max 5 MB</p>
+                                                    </div>
+                                                    <button type="submit" class="inline-flex items-center rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition">
+                                                        Submit signed lease
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <p class="text-sm text-amber-700">The landlord has not uploaded a lease agreement yet. Contact them to request it.</p>
+                                            @endif
+
+                                        {{-- STEP 3: Lease submitted — proceed to payment --}}
+                                        @elseif($booking->isApprovedAwaitingPayment())
+                                            <p class="text-sm font-semibold text-gray-900">Step 3 of 3 — Complete payment</p>
+                                            <p class="text-sm text-green-700">Lease received. Complete your payment below to confirm your booking.</p>
+
+                                            @if($booking->hasSignedLease())
+                                                <div class="flex flex-wrap gap-3 text-sm">
+                                                    <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-red-800 hover:underline">View submitted signed lease</a>
+                                                    <a href="{{ route('documents.signed-lease.show', ['booking' => $booking, 'download' => 1]) }}" class="text-red-800 hover:underline">Download</a>
+                                                </div>
+                                            @endif
+
+                                        {{-- CONFIRMED --}}
+                                        @elseif($booking->isConfirmed())
+                                            <p class="text-sm font-semibold text-green-800">Booking confirmed</p>
+                                            <p class="text-sm text-gray-600">Payment received on {{ $booking->paid_at?->format('d M Y') }}. Your accommodation is secured.</p>
+                                            @if($booking->hasSignedLease())
+                                                <div class="flex flex-wrap gap-3 text-sm">
+                                                    <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-red-800 hover:underline">View lease</a>
+                                                    <a href="{{ route('documents.signed-lease.show', ['booking' => $booking, 'download' => 1]) }}" class="text-red-800 hover:underline">Download lease</a>
+                                                </div>
+                                            @endif
+
+                                        {{-- REJECTED --}}
+                                        @elseif($booking->isRejected())
+                                            <p class="text-sm font-semibold text-red-700">Booking request declined</p>
+                                            @if($booking->landlord_rejection_note)
+                                                <p class="text-sm text-gray-600">Reason: {{ $booking->landlord_rejection_note }}</p>
+                                            @else
+                                                <p class="text-sm text-gray-600">The landlord did not approve this booking request. You may browse other properties.</p>
+                                            @endif
                                         @endif
+
                                     </div>
+
                                     @if($booking->special_requests)
-                                        <p class="text-sm text-gray-600 mt-4">{{ $booking->special_requests }}</p>
+                                        <p class="text-sm text-gray-600 mt-3"><span class="font-medium">Special requests:</span> {{ $booking->special_requests }}</p>
                                     @endif
                                 </div>
                             </div>
                         </div>
 
+                        {{-- Right: payment panel --}}
                         <div class="bg-gray-50 rounded-2xl p-6">
                             <p class="text-sm text-gray-500">Amount due</p>
                             <p class="text-3xl font-bold text-gray-900 mt-2">P{{ number_format($booking->total_amount, 2) }}</p>
-                            @if($booking->payment && $booking->payment->status === 'pending')
+
+                            @if($booking->isApprovedAwaitingPayment() && $booking->payment && $booking->payment->status === 'pending')
                                 @include('student._payment-form', [
                                     'payment' => $booking->payment,
                                     'submitLabel' => 'Pay and confirm',
                                     'formClass' => 'mt-5',
                                 ])
-                            @else
+                            @elseif($booking->isConfirmed())
                                 <div class="mt-5 text-sm text-green-700 font-semibold">Payment completed</div>
+                            @elseif($booking->isRejected())
+                                <div class="mt-5 text-sm text-red-600">No payment required.</div>
+                            @else
+                                <div class="mt-5 text-sm text-gray-500">Payment will be available once your lease is signed.</div>
                             @endif
                         </div>
                     </div>
@@ -128,7 +196,7 @@
                         <i class="fas fa-house-user text-5xl text-gray-300"></i>
                         <h3 class="text-2xl font-bold text-gray-900 mt-4">{{ $hasBookingFilter ? 'That booking could not be found' : 'No property selections yet' }}</h3>
                         <p class="text-gray-600 mt-2">
-                            {{ $hasBookingFilter ? 'Try returning to your bookings list or choose another property.' : 'Choose a verified off-campus property to start booking and payment.' }}
+                            {{ $hasBookingFilter ? 'Try returning to your bookings list or choose another property.' : 'Choose a verified off-campus property to start the booking process.' }}
                         </p>
                     </div>
                 @endforelse
