@@ -76,10 +76,29 @@ class InformationHubController extends Controller
             $query->where('category', $request->category);
         }
 
-        $requirements = $query->orderBy('priority')->orderBy('deadline')->paginate(10);
+        $requirements = $query->orderBy('priority')->orderBy('deadline')->get();
         $categories = ImmigrationRequirement::select('category')->distinct()->pluck('category');
 
-        return view('information.immigration', compact('requirements', 'categories'));
+        $immigrationForms = Resource::where('is_active', true)
+            ->where('type', 'document')
+            ->where('category', 'immigration')
+            ->latest()
+            ->get();
+
+        $immigrationLinks = Resource::where('is_active', true)
+            ->where('type', 'link')
+            ->where('category', 'immigration')
+            ->latest()
+            ->get();
+
+        $immigrationOffices = CampusOffice::where('category', 'immigration')
+            ->orWhere('office_name', 'like', '%immigration%')
+            ->get();
+
+        return view('information.immigration', compact(
+            'requirements', 'categories',
+            'immigrationForms', 'immigrationLinks', 'immigrationOffices'
+        ));
     }
 
     /**
