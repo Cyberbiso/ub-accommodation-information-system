@@ -150,11 +150,12 @@
                         </span>
                     </div>
 
-                    @if($req->required_documents && count($req->required_documents) > 0)
+                    @php $reqDocs = is_array($req->required_documents) ? $req->required_documents : []; @endphp
+                    @if(count($reqDocs) > 0)
                     <div class="mt-4">
                         <h4 class="text-sm font-semibold text-gray-700 mb-2">Required documents:</h4>
                         <ul class="space-y-1">
-                            @foreach($req->required_documents as $doc)
+                            @foreach($reqDocs as $doc)
                             <li class="flex items-center gap-2 text-sm text-gray-600">
                                 <i class="fas fa-check-circle text-green-600 text-xs"></i>{{ $doc }}
                             </li>
