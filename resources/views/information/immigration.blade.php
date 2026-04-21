@@ -395,7 +395,7 @@
 <div class="bg-gradient-to-r from-red-900 to-red-800 text-white py-12 mt-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-2xl font-bold mb-2">Need accommodation proof for your permit?</h2>
-        <p class="opacity-90 mb-6">UniStay can help you secure verified off-campus housing and generate accommodation confirmation documents.</p>
+        <p class="opacity-90 mb-6">UB-UniStay can help you secure verified off-campus housing and generate accommodation confirmation documents.</p>
         <div class="flex flex-wrap justify-center gap-4">
             <a href="{{ url('/properties') }}" class="bg-white text-red-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Browse Properties</a>
             @guest

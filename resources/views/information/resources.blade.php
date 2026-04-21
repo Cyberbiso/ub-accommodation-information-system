@@ -236,7 +236,7 @@
                 : route('login');
             $quickLinks = [
                 ['title' => 'My Dashboard', 'desc' => 'Access your bookings, applications, and account.', 'url' => $studentPortalUrl, 'icon' => 'fa-graduation-cap', 'color' => 'bg-blue-600', 'external' => false],
-                ['title' => 'UniStay — Find Housing', 'desc' => 'Browse verified off-campus properties near UB.', 'url' => url('/properties'), 'icon' => 'fa-home', 'color' => 'bg-red-800', 'external' => false],
+                ['title' => 'UB-UniStay — Find Housing', 'desc' => 'Browse verified off-campus properties near UB.', 'url' => url('/properties'), 'icon' => 'fa-home', 'color' => 'bg-red-800', 'external' => false],
                 ['title' => 'Immigration Guide', 'desc' => 'Study permit requirements and downloadable forms.', 'url' => route('information.immigration'), 'icon' => 'fa-passport', 'color' => 'bg-green-700', 'external' => false],
                 ['title' => 'UB Official Website', 'desc' => 'News, academic calendar, and university contacts.', 'url' => 'https://www.ub.bw', 'icon' => 'fa-university', 'color' => 'bg-purple-700', 'external' => true],
             ];
@@ -372,7 +372,7 @@
 <div class="bg-gradient-to-r from-red-900 to-red-800 text-white py-12 mt-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-2xl font-bold mb-2">Looking for off-campus accommodation?</h2>
-        <p class="opacity-90 mb-6">UniStay connects students with verified landlords and properties near the University of Botswana.</p>
+        <p class="opacity-90 mb-6">UB-UniStay connects students with verified landlords and properties near the University of Botswana.</p>
         <div class="flex flex-wrap justify-center gap-4">
             <a href="{{ url('/properties') }}" class="bg-white text-red-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Browse Properties</a>
             @guest

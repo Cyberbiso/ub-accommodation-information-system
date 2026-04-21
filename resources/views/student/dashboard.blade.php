@@ -12,7 +12,7 @@
         <div class="bg-white shadow-xl rounded-2xl overflow-hidden">
             <div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <p class="text-sm uppercase tracking-[0.2em] text-red-700 font-semibold">UniStay</p>
+                    <p class="text-sm uppercase tracking-[0.2em] text-red-700 font-semibold">UB-UniStay</p>
                     <h1 class="text-3xl font-bold text-gray-900 mt-2">{{ Auth::user()->name }}</h1>
                     <p class="text-gray-600 mt-2 max-w-2xl">
                         {{ Auth::user()->isInternational() ? 'International student support is active on your account. Use the help desk for immigration and onboarding questions.' : 'Track accommodation applications, payments, and support requests from one place.' }}

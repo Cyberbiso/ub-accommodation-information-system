@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'UniStay') }} - @yield('title')</title>
+    <title>{{ config('app.name', 'UB-UniStay') }} - @yield('title')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -38,7 +38,7 @@
                 <div class="flex items-center">
                     <a href="{{ url('/') }}" class="flex items-center space-x-2">
                         <i class="fas fa-home text-2xl text-red-800"></i>
-                        <span class="font-bold text-xl text-gray-800">UniStay</span>
+                        <span class="font-bold text-xl text-gray-800">UB-UniStay</span>
                     </a>
                 </div>
                 
@@ -192,7 +192,7 @@
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8 mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-gray-400">&copy; {{ date('Y') }} UniStay. All rights reserved.</p>
+            <p class="text-gray-400">&copy; {{ date('Y') }} UB-UniStay. All rights reserved.</p>
         </div>
     </footer>
 </body>

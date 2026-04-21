@@ -1,4 +1,4 @@
-# UniStay
+# UB-UniStay
 
 A Laravel-based student accommodation management system for the University of Botswana. It supports student registration with document uploads, welfare officer application review, landlord property management, and on/off-campus accommodation browsing.
 

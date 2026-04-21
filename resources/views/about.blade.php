@@ -4,12 +4,12 @@
 
 @section('content')
 <div class="container py-5">
-    <h1 class="display-4 mb-4">About UniStay</h1>
+    <h1 class="display-4 mb-4">About UB-UniStay</h1>
     
     <div class="row">
         <div class="col-lg-8">
             <p class="lead mb-4">
-                UniStay is a comprehensive platform designed to help students at the University of Botswana find suitable accommodation, whether on-campus or off-campus.
+                UB-UniStay is a comprehensive platform designed to help students at the University of Botswana find suitable accommodation, whether on-campus or off-campus.
             </p>
             
             <h2 class="h3 mb-3">Our Mission</h2>

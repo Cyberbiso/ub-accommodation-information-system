@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php --version)",
+      "Bash(npm --version)",
+      "Bash(composer --version)",
+      "Bash(git --version)",
+      "Bash(mysql --version)",
+      "Bash(mariadb --version)",
+      "Bash(git -C /Users/thabisoseleke/Desktop/Ub_Accomodation status)",
+      "Bash(git -C /Users/thabisoseleke/Desktop/Ub_Accomodation log --oneline -3)",
+      "Bash(git -C /Users/thabisoseleke/Desktop/Ub_Accomodation add README.md app/Http/Controllers/LandingPageController.php resources/views/about.blade.php resources/views/emails/welcome.blade.php resources/views/landing.blade.php resources/views/layouts/about.blade.php resources/views/layouts/app.blade.php resources/views/layouts/auth.blade.php resources/views/layouts/public.blade.php resources/views/public.blade.php resources/views/student/dashboard.blade.php)",
+      "Bash(git -C /Users/thabisoseleke/Desktop/Ub_Accomodation commit -m ' *)",
+      "Bash(git -C /Users/thabisoseleke/Desktop/Ub_Accomodation push origin main)",
+      "Bash(php artisan *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git commit -m 'Fix count\\(\\) error on non-array required_documents in immigration view *)",
+      "Bash(git commit -m 'Fix student portal link and resources button navigation *)",
+      "Bash(xargs sed *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

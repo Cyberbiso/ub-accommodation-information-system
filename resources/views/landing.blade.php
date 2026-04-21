@@ -1,12 +1,12 @@
 @extends('layouts.public')
 
-@section('title', 'UniStay')
+@section('title', 'UB-UniStay')
 
 @section('content')
 <!-- Hero Section -->
 <div class="hero-gradient text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">Welcome to UniStay</h1>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Welcome to UB-UniStay</h1>
         <p class="text-xl mb-8 max-w-3xl">
             Your complete pre-arrival and accommodation solution for the University of Botswana
         </p>
@@ -229,7 +229,7 @@
 <div class="hero-gradient text-white py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl font-bold mb-4">Ready to Start Your Journey?</h2>
-        <p class="text-xl mb-8 opacity-90">Join thousands of students who use UniStay for a smooth transition.</p>
+        <p class="text-xl mb-8 opacity-90">Join thousands of students who use UB-UniStay for a smooth transition.</p>
         <div class="flex flex-wrap justify-center gap-4">
             <a href="{{ route('register') }}" class="bg-white text-red-800 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
                 <i class="fas fa-user-plus mr-2"></i>Create Account
