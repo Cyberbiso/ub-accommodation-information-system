@@ -12,6 +12,7 @@ use App\Http\Controllers\AccommodationHubController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InformationHubController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaddleController;
 use Illuminate\Http\Request;
 
 /*
@@ -139,6 +140,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         // Payments
         Route::get('/payments', [StudentController::class, 'payments'])->name('payments');
         Route::post('/payments/process', [StudentController::class, 'processPayment'])->name('payments.process');
+        Route::post('/payments/paddle/checkout', [PaddleController::class, 'createCheckout'])->name('payments.paddle.checkout');
 
         // Virtual help desk
         Route::get('/support', [StudentController::class, 'supportDesk'])->name('support');
@@ -232,3 +234,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/announcements/{announcement}', [AdminController::class, 'destroyAnnouncement'])->name('announcements.destroy');
     });
 });
+
+// ==========================================
+// PADDLE WEBHOOK (no auth, no CSRF)
+// ==========================================
+Route::post('/paddle/webhook', [PaddleController::class, 'webhook'])->name('paddle.webhook');

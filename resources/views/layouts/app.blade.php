@@ -195,5 +195,24 @@
             <p class="text-gray-400">&copy; {{ date('Y') }} UB-UniStay. All rights reserved.</p>
         </div>
     </footer>
+    @if(config('services.paddle.client_side_token'))
+    <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+    <script>
+        Paddle.Initialize({
+            token: '{{ config('services.paddle.client_side_token') }}',
+            @if(config('services.paddle.environment') === 'sandbox')
+            environment: 'sandbox',
+            @endif
+            eventCallback: function (data) {
+                if (data.name === 'checkout.completed') {
+                    window.dispatchEvent(new CustomEvent('paddle:completed', { detail: data }));
+                }
+                if (data.name === 'checkout.closed') {
+                    window.dispatchEvent(new CustomEvent('paddle:closed'));
+                }
+            }
+        });
+    </script>
+    @endif
 </body>
 </html>

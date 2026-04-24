@@ -2,6 +2,7 @@
     $submitLabel = $submitLabel ?? 'Pay now';
     $formClass = $formClass ?? '';
     $paymentFormId = 'payment-form-' . $payment->id;
+    $paddleBtnId   = 'paddle-btn-' . $payment->id;
     $isCurrentPayment = (string) old('payment_id') === (string) $payment->id;
     $storedCapture = $payment->payment_details['method_capture'] ?? [];
     $selectedMethod = $isCurrentPayment
@@ -10,6 +11,32 @@
     $cardholderName = $isCurrentPayment ? old('cardholder_name', auth()->user()->name) : ($storedCapture['cardholder_name'] ?? auth()->user()->name);
     $bankAccountName = $isCurrentPayment ? old('account_name', auth()->user()->name) : ($storedCapture['account_name'] ?? auth()->user()->name);
 @endphp
+
+{{-- ===== PADDLE SANDBOX CHECKOUT ===== --}}
+@if(config('services.paddle.client_side_token'))
+<div class="space-y-2 mb-4">
+    <div class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        <span class="flex-1 border-t border-gray-200"></span>
+        <span>Pay with Paddle (Sandbox)</span>
+        <span class="flex-1 border-t border-gray-200"></span>
+    </div>
+    <button
+        id="{{ $paddleBtnId }}"
+        type="button"
+        data-payment-id="{{ $payment->id }}"
+        class="paddle-checkout-btn w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-semibold transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        Pay {{ $payment->formatted_amount }} via Paddle
+    </button>
+    <p class="text-xs text-gray-400 text-center">Sandbox mode — use test card <strong>4242 4242 4242 4242</strong>, any future date, any CVV.</p>
+</div>
+
+<div class="flex items-center gap-2 mb-4">
+    <span class="flex-1 border-t border-gray-200"></span>
+    <span class="text-xs text-gray-400">or pay manually below</span>
+    <span class="flex-1 border-t border-gray-200"></span>
+</div>
+@endif
 
 <form id="{{ $paymentFormId }}" method="POST" action="{{ route('student.payments.process') }}" class="space-y-4 {{ $formClass }}">
     @csrf
@@ -151,5 +178,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     methodSelect.addEventListener('change', updateSections);
     updateSections();
+
+    // ===== Paddle checkout button =====
+    const paddleBtn = document.getElementById(@json($paddleBtnId));
+    if (!paddleBtn || typeof Paddle === 'undefined') return;
+
+    paddleBtn.addEventListener('click', async () => {
+        const paymentId = paddleBtn.dataset.paymentId;
+        paddleBtn.disabled = true;
+        paddleBtn.textContent = 'Opening checkout…';
+
+        try {
+            const resp = await fetch(@json(route('student.payments.paddle.checkout')), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: JSON.stringify({ payment_id: paymentId }),
+            });
+
+            const json = await resp.json();
+
+            if (!resp.ok || json.error) {
+                alert(json.error ?? 'Failed to open checkout. Please try again.');
+                paddleBtn.disabled = false;
+                paddleBtn.textContent = 'Pay {{ $payment->formatted_amount }} via Paddle';
+                return;
+            }
+
+            Paddle.Checkout.open({ transactionId: json.transaction_id });
+        } catch (e) {
+            alert('Network error. Please check your connection and try again.');
+            paddleBtn.disabled = false;
+            paddleBtn.textContent = 'Pay {{ $payment->formatted_amount }} via Paddle';
+        }
+    });
+
+    // Redirect to payments page when Paddle checkout completes
+    window.addEventListener('paddle:completed', () => {
+        window.location.href = @json(route('student.payments'));
+    });
 });
 </script>
