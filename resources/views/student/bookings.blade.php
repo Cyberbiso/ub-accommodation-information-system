@@ -121,16 +121,13 @@
                                                     <i class="fas fa-file-pdf"></i> Open lease agreement
                                                 </a>
 
-                                                <form method="POST" action="{{ route('student.bookings.signed-lease.upload', $booking) }}" class="space-y-3 pt-2" data-sign-lease="{{ $booking->id }}">
+                                                <form method="POST" action="{{ route('student.bookings.signed-lease.upload', $booking) }}" enctype="multipart/form-data" class="space-y-3 pt-2">
                                                     @csrf
                                                     <div>
-                                                        <p class="text-sm font-medium text-gray-700 mb-2">Sign below</p>
-                                                        <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
-                                                            <canvas id="sig-canvas-{{ $booking->id }}" width="600" height="150" class="w-full cursor-crosshair" style="touch-action: none; display: block;"></canvas>
-                                                        </div>
-                                                        <button type="button" class="mt-1 text-xs text-gray-500 hover:text-red-800 underline" onclick="clearSignature('{{ $booking->id }}')">Clear signature</button>
-                                                        <input type="hidden" name="signature" id="sig-data-{{ $booking->id }}">
-                                                        <p class="text-xs text-gray-400 mt-1">Draw your signature using a mouse or finger. Make sure it is visible before submitting.</p>
+                                                        <p class="text-sm font-medium text-gray-700 mb-2">Upload your signed lease</p>
+                                                        <input type="file" name="signed_lease" accept=".pdf,.jpg,.jpeg,.png" required
+                                                               class="w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-800 hover:file:bg-red-100">
+                                                        <p class="text-xs text-gray-400 mt-1">PDF, JPG, or PNG — max 10 MB.</p>
                                                     </div>
                                                     <button type="submit" class="inline-flex items-center rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition">
                                                         Submit signed lease
@@ -226,62 +223,3 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-function initSignaturePad(bookingId) {
-    const canvas = document.getElementById('sig-canvas-' + bookingId);
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    let drawing = false;
-
-    function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
-    }
-
-    canvas.addEventListener('mousedown',  (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
-    canvas.addEventListener('mousemove',  (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
-    canvas.addEventListener('mouseup',    () => { drawing = false; });
-    canvas.addEventListener('mouseleave', () => { drawing = false; });
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
-    canvas.addEventListener('touchmove',  (e) => { e.preventDefault(); if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
-    canvas.addEventListener('touchend',   () => { drawing = false; });
-
-    const form = canvas.closest('form[data-sign-lease]');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const blank = document.createElement('canvas');
-            blank.width = canvas.width;
-            blank.height = canvas.height;
-            if (canvas.toDataURL() === blank.toDataURL()) {
-                e.preventDefault();
-                alert('Please draw your signature before submitting.');
-                return;
-            }
-            document.getElementById('sig-data-' + bookingId).value = canvas.toDataURL('image/png');
-        });
-    }
-}
-
-function clearSignature(bookingId) {
-    const canvas = document.getElementById('sig-canvas-' + bookingId);
-    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('form[data-sign-lease]').forEach(function(form) {
-        initSignaturePad(form.dataset.signLease);
-    });
-});
-</script>
-@endpush

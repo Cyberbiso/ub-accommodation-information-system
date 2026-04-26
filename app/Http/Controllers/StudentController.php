@@ -483,30 +483,24 @@ class StudentController extends Controller
             return back()->with('error', 'This property does not have a lease agreement available yet.');
         }
 
-        $request->validate(['signature' => 'required|string']);
-
-        $signatureData = $request->input('signature');
-
-        if (!str_starts_with($signatureData, 'data:image/png;base64,')) {
-            return back()->with('error', 'Invalid signature format. Please sign and try again.');
-        }
-
-        $imageData = base64_decode(str_replace('data:image/png;base64,', '', $signatureData));
-
-        if (!$imageData) {
-            return back()->with('error', 'Could not process the signature. Please try again.');
-        }
+        $request->validate([
+            'signed_lease' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ]);
 
         if ($booking->signed_lease_path && Storage::disk('public')->exists($booking->signed_lease_path)) {
             Storage::disk('public')->delete($booking->signed_lease_path);
         }
 
-        $path = 'signed-leases/' . Auth::id() . '/' . $booking->id . '/signature-' . now()->format('Ymd-His') . '.png';
-        Storage::disk('public')->put($path, $imageData);
+        $file = $request->file('signed_lease');
+        $path = $file->storeAs(
+            'signed-leases/' . Auth::id() . '/' . $booking->id,
+            'signed-lease-' . now()->format('Ymd-His') . '.' . $file->getClientOriginalExtension(),
+            'public'
+        );
 
         $booking->update([
             'signed_lease_path'          => $path,
-            'signed_lease_original_name' => 'Signed lease — ' . now()->format('d M Y'),
+            'signed_lease_original_name' => $file->getClientOriginalName(),
             'signed_lease_submitted_at'  => now(),
         ]);
 
