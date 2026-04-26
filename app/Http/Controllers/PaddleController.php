@@ -34,35 +34,38 @@ class PaddleController extends Controller
         // BWP is not supported by Paddle, so we use USD for sandbox simulation.
         $amountInCents = (string) (int) round($payment->amount * 100);
 
-        $user = Auth::user();
+        $user       = Auth::user();
+        $customerId = $this->resolveCustomerId($user->email, $user->name);
+
+        $payload = [
+            'items' => [[
+                'price' => [
+                    'name'        => $payment->type_label,
+                    'description' => $payment->type_label . ' — UB-UniStay (Sandbox)',
+                    'product' => [
+                        'name'         => 'UB-UniStay Accommodation Payment',
+                        'tax_category' => 'standard',
+                    ],
+                    'unit_price' => [
+                        'amount'        => $amountInCents,
+                        'currency_code' => 'USD',
+                    ],
+                ],
+                'quantity' => 1,
+            ]],
+            'custom_data' => [
+                'payment_id' => (string) $payment->id,
+                'student_id' => (string) Auth::id(),
+            ],
+        ];
+
+        if ($customerId) {
+            $payload['customer_id'] = $customerId;
+        }
 
         $response = Http::withToken(config('services.paddle.api_key'))
             ->acceptJson()
-            ->post($this->apiBase() . '/transactions', [
-                'items' => [[
-                    'price' => [
-                        'name'        => $payment->type_label,
-                        'description' => $payment->type_label . ' — UB-UniStay (Sandbox)',
-                        'product' => [
-                            'name'         => 'UB-UniStay Accommodation Payment',
-                            'tax_category' => 'standard',
-                        ],
-                        'unit_price' => [
-                            'amount'        => $amountInCents,
-                            'currency_code' => 'USD',
-                        ],
-                    ],
-                    'quantity' => 1,
-                ]],
-                'customer' => [
-                    'email' => $user->email,
-                    'name'  => $user->name,
-                ],
-                'custom_data' => [
-                    'payment_id' => (string) $payment->id,
-                    'student_id' => (string) Auth::id(),
-                ],
-            ]);
+            ->post($this->apiBase() . '/transactions', $payload);
 
         if (!$response->successful()) {
             Log::error('Paddle transaction creation failed', [
@@ -160,6 +163,33 @@ class PaddleController extends Controller
         }
 
         return response('OK', 200);
+    }
+
+    private function resolveCustomerId(string $email, string $name): ?string
+    {
+        // Search for existing Paddle customer by email
+        $search = Http::withToken(config('services.paddle.api_key'))
+            ->acceptJson()
+            ->get($this->apiBase() . '/customers', ['search' => $email]);
+
+        if ($search->successful()) {
+            $customers = $search->json('data', []);
+            foreach ($customers as $customer) {
+                if (isset($customer['email']) && strtolower($customer['email']) === strtolower($email)) {
+                    return $customer['id'];
+                }
+            }
+        }
+
+        // Create new customer
+        $create = Http::withToken(config('services.paddle.api_key'))
+            ->acceptJson()
+            ->post($this->apiBase() . '/customers', [
+                'email' => $email,
+                'name'  => $name,
+            ]);
+
+        return $create->successful() ? $create->json('data.id') : null;
     }
 
     private function verifySignature(string $payload, ?string $signatureHeader): bool
