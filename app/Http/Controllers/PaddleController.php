@@ -40,10 +40,6 @@ class PaddleController extends Controller
             ->acceptJson()
             ->post($this->apiBase() . '/transactions', [
                 'collection_mode' => 'automatic',
-                'customer'        => [
-                    'email' => $user->email,
-                    'name'  => $user->name,
-                ],
                 'items' => [[
                     'price' => [
                         'name'        => 'Accommodation Payment — ' . $payment->payable->booking_reference,
@@ -73,22 +69,12 @@ class PaddleController extends Controller
         }
 
         $transactionId = $response->json('data.id');
-        $checkoutUrl   = $response->json('data.checkout.url');
-
-        Log::info('Paddle transaction created', [
-            'transaction_id' => $transactionId,
-            'status'         => $response->json('data.status'),
-            'checkout'       => $response->json('data.checkout'),
-        ]);
 
         $details = $payment->payment_details ?? [];
         $details['paddle_transaction_id'] = $transactionId;
         $payment->update(['payment_details' => $details]);
 
-        return response()->json([
-            'transaction_id' => $transactionId,
-            'checkout_url'   => $checkoutUrl,
-        ]);
+        return response()->json(['transaction_id' => $transactionId]);
     }
 
     public function webhook(Request $request)

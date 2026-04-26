@@ -52,8 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Redirect to Paddle hosted checkout (avoids JS overlay domain restrictions)
-            window.location.href = json.checkout_url;
+            Paddle.Checkout.open({ transactionId: json.transaction_id });
         } catch (e) {
             alert('Network error. Please check your connection and try again.');
             paddleBtn.disabled = false;
