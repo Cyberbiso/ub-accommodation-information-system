@@ -41,21 +41,18 @@ class PaddleController extends Controller
             ->post($this->apiBase() . '/transactions', [
                 'items' => [[
                     'price' => [
-                        'name'        => 'UB-UniStay Accommodation Payment',
-                        'tax_mode'    => 'external',
-                        'product'     => [
-                            'name'         => 'UB-UniStay Accommodation Payment',
-                            'tax_category' => 'standard',
-                        ],
+                        'name'        => 'Accommodation Payment — ' . $payment->payable->booking_reference,
+                        'description' => 'Off-campus accommodation payment via UB-UniStay',
+                        'product_id'  => config('services.paddle.product_id'),
                         'unit_price'  => [
                             'amount'        => $amountInCents,
                             'currency_code' => 'USD',
                         ],
+                        'tax_mode'    => 'external',
                     ],
                     'quantity' => 1,
                 ]],
-                'customer_email' => $user->email,
-                'custom_data'    => [
+                'custom_data' => [
                     'payment_id' => (string) $payment->id,
                     'student_id' => (string) Auth::id(),
                 ],
