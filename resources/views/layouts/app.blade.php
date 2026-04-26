@@ -200,9 +200,6 @@
     <script>
         Paddle.Initialize({
             token: '{{ config('services.paddle.client_side_token') }}',
-            @if(config('services.paddle.environment') === 'sandbox')
-            environment: 'sandbox',
-            @endif
             eventCallback: function (data) {
                 if (data.name === 'checkout.completed') {
                     window.dispatchEvent(new CustomEvent('paddle:completed', { detail: data }));
