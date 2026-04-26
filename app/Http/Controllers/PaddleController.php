@@ -40,6 +40,10 @@ class PaddleController extends Controller
             ->acceptJson()
             ->post($this->apiBase() . '/transactions', [
                 'collection_mode' => 'automatic',
+                'customer'        => [
+                    'email' => $user->email,
+                    'name'  => $user->name,
+                ],
                 'items' => [[
                     'price' => [
                         'name'        => 'Accommodation Payment — ' . $payment->payable->booking_reference,
@@ -69,14 +73,12 @@ class PaddleController extends Controller
         }
 
         $transactionId = $response->json('data.id');
-        $base          = config('services.paddle.environment') === 'sandbox'
-            ? 'https://sandbox-buy.paddle.com'
-            : 'https://buy.paddle.com';
-        $checkoutUrl   = $base . '/checkout/' . $transactionId;
+        $checkoutUrl   = $response->json('data.checkout.url');
 
         Log::info('Paddle transaction created', [
             'transaction_id' => $transactionId,
-            'checkout_url'   => $checkoutUrl,
+            'status'         => $response->json('data.status'),
+            'checkout'       => $response->json('data.checkout'),
         ]);
 
         $details = $payment->payment_details ?? [];
