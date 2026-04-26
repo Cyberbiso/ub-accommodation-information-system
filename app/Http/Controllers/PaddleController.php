@@ -63,13 +63,15 @@ class PaddleController extends Controller
                 'customer_id'     => $customerId,
                 'items' => [[
                     'price' => [
-                        'name'       => 'Accommodation — ' . $payment->payable->booking_reference,
-                        'product_id' => config('services.paddle.product_id'),
-                        'unit_price' => [
+                        'name'        => 'Accommodation Payment',
+                        'description' => 'Booking ' . $payment->payable->booking_reference,
+                        'product_id'  => config('services.paddle.product_id'),
+                        'unit_price'  => [
                             'amount'        => $amountInCents,
                             'currency_code' => 'USD',
                         ],
-                        'tax_mode' => 'account_setting',
+                        'quantity'   => ['minimum' => 1, 'maximum' => 1],
+                        'tax_mode'   => 'account_setting',
                     ],
                     'quantity' => 1,
                 ]],
