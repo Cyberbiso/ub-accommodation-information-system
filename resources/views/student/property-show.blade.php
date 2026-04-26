@@ -217,9 +217,16 @@
                                     <a href="{{ route('student.bookings', ['booking' => $existingBooking->id]) }}" class="block w-full text-center bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
                                         Upload signed lease
                                     </a>
+                                @elseif($existingBooking->isLeasePendingLandlordApproval())
+                                    <div class="bg-purple-50 border border-purple-100 rounded-xl p-4 text-sm text-purple-900">
+                                        Your signed lease has been submitted and is awaiting landlord approval.
+                                    </div>
+                                    <a href="{{ route('student.bookings', ['booking' => $existingBooking->id]) }}" class="block w-full text-center border border-gray-300 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                        Open this booking
+                                    </a>
                                 @elseif($existingBooking->isApprovedAwaitingPayment())
                                     <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-900">
-                                        Lease received. Complete your payment to confirm this booking.
+                                        Lease approved. Complete your payment to confirm this booking.
                                     </div>
                                     <a href="{{ route('student.payments') }}" class="block w-full text-center bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
                                         Continue payment for this booking

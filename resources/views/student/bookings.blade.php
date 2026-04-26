@@ -103,23 +103,30 @@
                                             <p class="text-sm font-semibold text-gray-900">Step 1 of 3 — Awaiting landlord review</p>
                                             <p class="text-sm text-gray-600">Your request has been sent to the landlord. You will be notified once they review it.</p>
 
-                                        {{-- STEP 2: Approved — upload signed lease --}}
+                                        {{-- STEP 2: Approved — sign the lease --}}
                                         @elseif($booking->isApprovedAwaitingLease())
-                                            <p class="text-sm font-semibold text-gray-900">Step 2 of 3 — Sign &amp; upload the lease</p>
-                                            <p class="text-sm text-green-700">Your booking request was approved! Download the lease, sign it, then upload your signed copy below.</p>
+                                            <p class="text-sm font-semibold text-gray-900">Step 2 of 4 — Read &amp; sign the lease</p>
+                                            @if($booking->landlord_rejection_note)
+                                                <p class="text-sm text-red-700">Your previous signature was declined: {{ $booking->landlord_rejection_note }}. Please sign again.</p>
+                                            @else
+                                                <p class="text-sm text-green-700">Your booking was approved! Review the lease agreement and sign below.</p>
+                                            @endif
 
                                             @if($booking->property->hasLeaseAgreement())
-                                                <div class="flex flex-wrap gap-3 text-sm">
-                                                    <a href="{{ route('documents.property-lease.show', $booking->property) }}" target="_blank" class="text-red-800 hover:underline">Open lease agreement</a>
-                                                    <a href="{{ route('documents.property-lease.show', ['property' => $booking->property, 'download' => 1]) }}" class="text-red-800 hover:underline">Download lease</a>
-                                                </div>
+                                                <a href="{{ route('documents.property-lease.show', $booking->property) }}" target="_blank" class="inline-flex items-center gap-1 text-sm text-red-800 hover:underline">
+                                                    <i class="fas fa-file-pdf"></i> Open lease agreement
+                                                </a>
 
-                                                <form method="POST" action="{{ route('student.bookings.signed-lease.upload', $booking) }}" enctype="multipart/form-data" class="space-y-3 pt-2">
+                                                <form method="POST" action="{{ route('student.bookings.signed-lease.upload', $booking) }}" class="space-y-3 pt-2" data-sign-lease="{{ $booking->id }}">
                                                     @csrf
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-700 mb-1">Upload signed lease</label>
-                                                        <input type="file" name="signed_lease" class="block w-full text-sm text-gray-700" required>
-                                                        <p class="text-xs text-gray-500 mt-1">PDF, JPG or PNG — max 5 MB</p>
+                                                        <p class="text-sm font-medium text-gray-700 mb-2">Sign below</p>
+                                                        <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+                                                            <canvas id="sig-canvas-{{ $booking->id }}" width="600" height="150" class="w-full cursor-crosshair" style="touch-action: none; display: block;"></canvas>
+                                                        </div>
+                                                        <button type="button" class="mt-1 text-xs text-gray-500 hover:text-red-800 underline" onclick="clearSignature('{{ $booking->id }}')">Clear signature</button>
+                                                        <input type="hidden" name="signature" id="sig-data-{{ $booking->id }}">
+                                                        <p class="text-xs text-gray-400 mt-1">Draw your signature using a mouse or finger. Make sure it is visible before submitting.</p>
                                                     </div>
                                                     <button type="submit" class="inline-flex items-center rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition">
                                                         Submit signed lease
@@ -129,10 +136,18 @@
                                                 <p class="text-sm text-amber-700">The landlord has not uploaded a lease agreement yet. Contact them to request it.</p>
                                             @endif
 
-                                        {{-- STEP 3: Lease submitted — proceed to payment --}}
+                                        {{-- STEP 3: Signed lease awaiting landlord approval --}}
+                                        @elseif($booking->isLeasePendingLandlordApproval())
+                                            <p class="text-sm font-semibold text-gray-900">Step 3 of 4 — Awaiting lease approval</p>
+                                            <p class="text-sm text-blue-700">Your signed lease has been submitted. The landlord will review and approve or decline it shortly.</p>
+                                            @if($booking->hasSignedLease())
+                                                <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-sm text-red-800 hover:underline">View submitted signature</a>
+                                            @endif
+
+                                        {{-- STEP 4: Lease approved — proceed to payment --}}
                                         @elseif($booking->isApprovedAwaitingPayment())
-                                            <p class="text-sm font-semibold text-gray-900">Step 3 of 3 — Complete payment</p>
-                                            <p class="text-sm text-green-700">Lease received. Complete your payment below to confirm your booking.</p>
+                                            <p class="text-sm font-semibold text-gray-900">Step 4 of 4 — Complete payment</p>
+                                            <p class="text-sm text-green-700">Lease approved. Complete your payment below to confirm your booking.</p>
 
                                             @if($booking->hasSignedLease())
                                                 <div class="flex flex-wrap gap-3 text-sm">
@@ -209,3 +224,63 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function initSignaturePad(bookingId) {
+    const canvas = document.getElementById('sig-canvas-' + bookingId);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    let drawing = false;
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
+    canvas.addEventListener('mousedown',  (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('mousemove',  (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+    canvas.addEventListener('mouseup',    () => { drawing = false; });
+    canvas.addEventListener('mouseleave', () => { drawing = false; });
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
+    canvas.addEventListener('touchmove',  (e) => { e.preventDefault(); if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+    canvas.addEventListener('touchend',   () => { drawing = false; });
+
+    const form = canvas.closest('form[data-sign-lease]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const blank = document.createElement('canvas');
+            blank.width = canvas.width;
+            blank.height = canvas.height;
+            if (canvas.toDataURL() === blank.toDataURL()) {
+                e.preventDefault();
+                alert('Please draw your signature before submitting.');
+                return;
+            }
+            document.getElementById('sig-data-' + bookingId).value = canvas.toDataURL('image/png');
+        });
+    }
+}
+
+function clearSignature(bookingId) {
+    const canvas = document.getElementById('sig-canvas-' + bookingId);
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('form[data-sign-lease]').forEach(function(form) {
+        initSignaturePad(form.dataset.signLease);
+    });
+});
+</script>
+@endpush

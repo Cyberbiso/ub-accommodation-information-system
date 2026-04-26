@@ -9,11 +9,12 @@ class PropertyBooking extends Model
 {
     use HasFactory;
 
-    const STATUS_PENDING_LANDLORD_REVIEW   = 'pending_landlord_review';
-    const STATUS_APPROVED_AWAITING_LEASE   = 'approved_awaiting_lease';
-    const STATUS_APPROVED_AWAITING_PAYMENT = 'approved_awaiting_payment';
-    const STATUS_CONFIRMED                 = 'confirmed';
-    const STATUS_REJECTED                  = 'rejected';
+    const STATUS_PENDING_LANDLORD_REVIEW          = 'pending_landlord_review';
+    const STATUS_APPROVED_AWAITING_LEASE          = 'approved_awaiting_lease';
+    const STATUS_LEASE_PENDING_LANDLORD_APPROVAL  = 'lease_pending_landlord_approval';
+    const STATUS_APPROVED_AWAITING_PAYMENT        = 'approved_awaiting_payment';
+    const STATUS_CONFIRMED                        = 'confirmed';
+    const STATUS_REJECTED                         = 'rejected';
 
     protected $fillable = [
         'booking_reference',
@@ -80,6 +81,11 @@ class PropertyBooking extends Model
         return $this->status === self::STATUS_APPROVED_AWAITING_LEASE;
     }
 
+    public function isLeasePendingLandlordApproval(): bool
+    {
+        return $this->status === self::STATUS_LEASE_PENDING_LANDLORD_APPROVAL;
+    }
+
     public function isApprovedAwaitingPayment(): bool
     {
         return $this->status === self::STATUS_APPROVED_AWAITING_PAYMENT;
@@ -135,7 +141,33 @@ class PropertyBooking extends Model
             return false;
         }
 
+        return $this->update(['status' => self::STATUS_LEASE_PENDING_LANDLORD_APPROVAL]);
+    }
+
+    // ─── Landlord lease approval ───────────────────────────────────────────────
+
+    public function approveLease(): bool
+    {
+        if ($this->status !== self::STATUS_LEASE_PENDING_LANDLORD_APPROVAL) {
+            return false;
+        }
+
         return $this->update(['status' => self::STATUS_APPROVED_AWAITING_PAYMENT]);
+    }
+
+    public function rejectLease(?string $note = null): bool
+    {
+        if ($this->status !== self::STATUS_LEASE_PENDING_LANDLORD_APPROVAL) {
+            return false;
+        }
+
+        return $this->update([
+            'status'                    => self::STATUS_APPROVED_AWAITING_LEASE,
+            'landlord_rejection_note'   => $note,
+            'signed_lease_path'         => null,
+            'signed_lease_original_name' => null,
+            'signed_lease_submitted_at' => null,
+        ]);
     }
 
     // ─── Payment confirmation ──────────────────────────────────────────────────

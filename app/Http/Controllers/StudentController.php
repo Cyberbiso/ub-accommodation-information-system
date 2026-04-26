@@ -319,6 +319,7 @@ class StudentController extends Controller
             ->whereIn('status', [
                 PropertyBooking::STATUS_PENDING_LANDLORD_REVIEW,
                 PropertyBooking::STATUS_APPROVED_AWAITING_LEASE,
+                PropertyBooking::STATUS_LEASE_PENDING_LANDLORD_APPROVAL,
                 PropertyBooking::STATUS_APPROVED_AWAITING_PAYMENT,
                 PropertyBooking::STATUS_CONFIRMED,
             ])
@@ -475,28 +476,38 @@ class StudentController extends Controller
         abort_unless($booking->student_id === Auth::id(), 403);
 
         if (!$booking->isApprovedAwaitingLease()) {
-            return back()->with('error', 'You can only upload a signed lease after the landlord has approved your booking request.');
+            return back()->with('error', 'You can only sign the lease after the landlord has approved your booking request.');
         }
 
         if (!$booking->property || !$booking->property->hasLeaseAgreement()) {
             return back()->with('error', 'This property does not have a lease agreement available yet.');
         }
 
-        $validated = $request->validate([
-            'signed_lease' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        ]);
+        $request->validate(['signature' => 'required|string']);
+
+        $signatureData = $request->input('signature');
+
+        if (!str_starts_with($signatureData, 'data:image/png;base64,')) {
+            return back()->with('error', 'Invalid signature format. Please sign and try again.');
+        }
+
+        $imageData = base64_decode(str_replace('data:image/png;base64,', '', $signatureData));
+
+        if (!$imageData) {
+            return back()->with('error', 'Could not process the signature. Please try again.');
+        }
 
         if ($booking->signed_lease_path && Storage::disk('public')->exists($booking->signed_lease_path)) {
             Storage::disk('public')->delete($booking->signed_lease_path);
         }
 
-        $file = $validated['signed_lease'];
-        $path = $file->store('signed-leases/' . Auth::id() . '/' . $booking->id, 'public');
+        $path = 'signed-leases/' . Auth::id() . '/' . $booking->id . '/signature-' . now()->format('Ymd-His') . '.png';
+        Storage::disk('public')->put($path, $imageData);
 
         $booking->update([
-            'signed_lease_path' => $path,
-            'signed_lease_original_name' => $file->getClientOriginalName(),
-            'signed_lease_submitted_at' => now(),
+            'signed_lease_path'          => $path,
+            'signed_lease_original_name' => 'Signed lease — ' . now()->format('d M Y'),
+            'signed_lease_submitted_at'  => now(),
         ]);
 
         $booking->markLeaseSubmitted();
@@ -504,13 +515,13 @@ class StudentController extends Controller
         SystemNotification::notifyUser(
             $booking->landlord_id,
             'Signed lease submitted',
-            Auth::user()->name . ' uploaded a signed lease for booking ' . $booking->booking_reference . '. They can now proceed to payment.',
+            Auth::user()->name . ' has signed the lease for booking ' . $booking->booking_reference . '. Please review and approve or decline.',
             route('landlord.bookings'),
             'info',
             Auth::id()
         );
 
-        return back()->with('success', 'Signed lease uploaded. You can now proceed to payment.');
+        return back()->with('success', 'Lease signed successfully. Awaiting landlord approval.');
     }
 
     public function bookings(Request $request)

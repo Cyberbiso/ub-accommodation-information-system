@@ -401,6 +401,50 @@ class LandlordController extends Controller
         return back()->with('success', 'Booking rejected. Student has been notified.');
     }
 
+    public function approveLease(Request $request, PropertyBooking $booking)
+    {
+        abort_unless($booking->landlord_id === Auth::id(), 403);
+
+        if (!$booking->approveLease()) {
+            return back()->with('error', 'This lease cannot be approved at its current stage.');
+        }
+
+        SystemNotification::notifyUser(
+            $booking->student_id,
+            'Lease approved',
+            'Your signed lease for ' . $booking->property->title . ' has been approved. You can now proceed to payment.',
+            route('student.bookings', ['booking' => $booking->id]),
+            'success',
+            Auth::id()
+        );
+
+        return back()->with('success', 'Lease approved. Student can now proceed to payment.');
+    }
+
+    public function rejectLease(Request $request, PropertyBooking $booking)
+    {
+        abort_unless($booking->landlord_id === Auth::id(), 403);
+
+        $validated = $request->validate([
+            'rejection_note' => 'nullable|string|max:1000',
+        ]);
+
+        if (!$booking->rejectLease($validated['rejection_note'] ?? null)) {
+            return back()->with('error', 'This lease cannot be declined at its current stage.');
+        }
+
+        SystemNotification::notifyUser(
+            $booking->student_id,
+            'Signed lease declined',
+            'Your signed lease for ' . $booking->property->title . ' was declined.' . ($validated['rejection_note'] ? ' Reason: ' . $validated['rejection_note'] : ' Please sign and resubmit.'),
+            route('student.bookings', ['booking' => $booking->id]),
+            'warning',
+            Auth::id()
+        );
+
+        return back()->with('success', 'Lease declined. Student has been notified to resubmit.');
+    }
+
     public function enquiries(Request $request)
     {
         $query = PropertyEnquiry::where('landlord_id', Auth::id())

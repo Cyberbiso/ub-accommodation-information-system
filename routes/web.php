@@ -168,6 +168,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/bookings', [LandlordController::class, 'bookings'])->name('bookings');
         Route::post('/bookings/{booking}/approve', [LandlordController::class, 'approveBooking'])->name('bookings.approve');
         Route::post('/bookings/{booking}/reject', [LandlordController::class, 'rejectBooking'])->name('bookings.reject');
+        Route::post('/bookings/{booking}/approve-lease', [LandlordController::class, 'approveLease'])->name('bookings.lease.approve');
+        Route::post('/bookings/{booking}/reject-lease', [LandlordController::class, 'rejectLease'])->name('bookings.lease.reject');
         Route::get('/enquiries', [LandlordController::class, 'enquiries'])->name('enquiries');
         Route::post('/enquiries/{enquiry}/respond', [LandlordController::class, 'respondToEnquiry'])->name('enquiries.respond');
     });
