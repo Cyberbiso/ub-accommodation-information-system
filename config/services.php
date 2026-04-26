@@ -41,6 +41,7 @@ return [
         'client_side_token'  => env('PADDLE_CLIENT_SIDE_TOKEN'),
         'webhook_secret'     => env('PADDLE_WEBHOOK_SECRET'),
         'product_id'         => env('PADDLE_PRODUCT_ID'),
+        'price_id'           => env('PADDLE_PRICE_ID'),
     ],
 
 ];

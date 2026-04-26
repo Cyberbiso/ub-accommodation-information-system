@@ -49,17 +49,12 @@ class PaddleController extends Controller
                 'collection_mode' => 'automatic',
                 'customer_id'     => $customerId,
                 'items' => [[
-                    'price' => [
-                        'name'        => 'Accommodation Payment — ' . $payment->payable->booking_reference,
-                        'description' => 'Off-campus accommodation payment via UB-UniStay',
-                        'product_id'  => config('services.paddle.product_id'),
-                        'unit_price'  => [
-                            'amount'        => $amountInCents,
-                            'currency_code' => 'USD',
-                        ],
-                        'tax_mode'    => 'account_setting',
+                    'price_id'             => config('services.paddle.price_id'),
+                    'quantity'             => 1,
+                    'unit_price_override'  => [
+                        'amount'        => $amountInCents,
+                        'currency_code' => 'USD',
                     ],
-                    'quantity' => 1,
                 ]],
                 'custom_data' => [
                     'payment_id' => (string) $payment->id,
