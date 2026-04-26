@@ -150,10 +150,7 @@
                                             <p class="text-sm text-green-700">Lease approved. Complete your payment below to confirm your booking.</p>
 
                                             @if($booking->hasSignedLease())
-                                                <div class="flex flex-wrap gap-3 text-sm">
-                                                    <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-red-800 hover:underline">View submitted signed lease</a>
-                                                    <a href="{{ route('documents.signed-lease.show', ['booking' => $booking, 'download' => 1]) }}" class="text-red-800 hover:underline">Download</a>
-                                                </div>
+                                                <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-sm text-red-800 hover:underline">View submitted signature</a>
                                             @endif
 
                                         {{-- CONFIRMED --}}

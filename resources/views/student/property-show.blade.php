@@ -190,15 +190,10 @@
                         @if($property->hasLeaseAgreement())
                             <div class="mt-4 bg-gray-50 rounded-xl p-4 text-sm text-gray-700">
                                 <p class="font-semibold text-gray-900">Lease agreement</p>
-                                <p class="mt-2">Review the landlord's lease before booking, then upload the signed copy from your bookings page.</p>
-                                <div class="mt-3 flex flex-wrap gap-3">
-                                    <a href="{{ route('documents.property-lease.show', $property) }}" target="_blank" class="inline-flex items-center gap-2 text-red-800 hover:underline">
-                                        <i class="fas fa-file-signature"></i>Open lease
-                                    </a>
-                                    <a href="{{ route('documents.property-lease.show', ['property' => $property, 'download' => 1]) }}" class="inline-flex items-center gap-2 text-red-800 hover:underline">
-                                        <i class="fas fa-download"></i>Download lease
-                                    </a>
-                                </div>
+                                <p class="mt-2">Read the lease before booking. Once your booking is approved you will sign it digitally from your bookings page.</p>
+                                <a href="{{ route('documents.property-lease.show', $property) }}" target="_blank" class="inline-flex items-center gap-2 mt-3 text-red-800 hover:underline">
+                                    <i class="fas fa-file-pdf"></i> Read lease agreement
+                                </a>
                             </div>
                         @endif
                         @if($existingBooking)
