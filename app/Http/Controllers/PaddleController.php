@@ -68,7 +68,7 @@ class PaddleController extends Controller
                         'product_id'  => config('services.paddle.product_id'),
                         'unit_price'  => [
                             'amount'        => $amountInCents,
-                            'currency_code' => 'USD',
+                            'currency_code' => 'ZAR',
                         ],
                         'quantity'   => ['minimum' => 1, 'maximum' => 1],
                         'tax_mode'   => 'account_setting',
