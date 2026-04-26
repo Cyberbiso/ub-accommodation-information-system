@@ -55,18 +55,23 @@ class PaddleController extends Controller
             return response()->json(['error' => 'Could not initialise Paddle customer.'], 500);
         }
 
+        // Step 1: Create transaction with inline price (starts as draft)
         $response = Http::withToken(config('services.paddle.api_key'))
             ->acceptJson()
             ->post($this->apiBase() . '/transactions', [
                 'collection_mode' => 'automatic',
                 'customer_id'     => $customerId,
                 'items' => [[
-                    'price_id'             => config('services.paddle.price_id'),
-                    'quantity'             => 1,
-                    'unit_price_override'  => [
-                        'amount'        => $amountInCents,
-                        'currency_code' => 'USD',
+                    'price' => [
+                        'name'       => 'Accommodation — ' . $payment->payable->booking_reference,
+                        'product_id' => config('services.paddle.product_id'),
+                        'unit_price' => [
+                            'amount'        => $amountInCents,
+                            'currency_code' => 'USD',
+                        ],
+                        'tax_mode' => 'account_setting',
                     ],
+                    'quantity' => 1,
                 ]],
                 'custom_data' => [
                     'payment_id' => (string) $payment->id,
@@ -83,14 +88,23 @@ class PaddleController extends Controller
             return response()->json(['error' => 'Could not create Paddle checkout. Check your API key.'], 500);
         }
 
-        $transactionData = $response->json('data');
-        $transactionId   = $transactionData['id'] ?? null;
+        $transactionId = $response->json('data.id');
+
+        // Step 2: Move transaction from draft → ready so the JS overlay accepts it
+        $readyResponse = Http::withToken(config('services.paddle.api_key'))
+            ->acceptJson()
+            ->patch($this->apiBase() . '/transactions/' . $transactionId, [
+                'status' => 'ready',
+            ]);
+
+        $transactionData = $readyResponse->successful()
+            ? $readyResponse->json('data')
+            : $response->json('data');
 
         Log::info('Paddle transaction created', [
             'transaction_id' => $transactionId,
             'status'         => $transactionData['status'] ?? null,
             'customer_id'    => $transactionData['customer_id'] ?? null,
-            'checkout'       => $transactionData['checkout'] ?? null,
         ]);
 
         $checkoutBase = config('services.paddle.environment') === 'sandbox'
