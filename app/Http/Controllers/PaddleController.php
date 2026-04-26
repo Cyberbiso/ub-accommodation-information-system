@@ -48,7 +48,7 @@ class PaddleController extends Controller
                             'amount'        => $amountInCents,
                             'currency_code' => 'USD',
                         ],
-                        'tax_mode'    => 'external',
+                        'tax_mode'    => 'account_setting',
                     ],
                     'quantity' => 1,
                 ]],
