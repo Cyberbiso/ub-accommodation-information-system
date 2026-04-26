@@ -16,18 +16,18 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow overflow-hidden">
-            <div class="border-b border-gray-100 p-8">
-                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div class="bg-gradient-to-br from-red-950 via-red-900 to-amber-700 text-white p-8">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
                     <div>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Verified Listing</span>
-                        <h1 class="text-3xl font-bold text-gray-900 mt-3">{{ $property->title }}</h1>
-                        <p class="text-gray-600 mt-3 max-w-3xl">{{ $property->description }}</p>
+                        <p class="text-sm uppercase tracking-[0.2em] text-white/70">Verified Listing</p>
+                        <h1 class="text-4xl font-bold mt-3">{{ $property->title }}</h1>
+                        <p class="text-white/80 mt-3 max-w-3xl">{{ $property->description }}</p>
                     </div>
-                    <div class="bg-gray-50 border border-gray-200 rounded-2xl px-6 py-5 shrink-0 min-w-[220px]">
-                        <p class="text-sm text-gray-500">Monthly rent</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">P{{ number_format($property->monthly_rent, 2) }}</p>
-                        <p class="text-sm text-gray-600 mt-2">Deposit: P{{ number_format($property->deposit_amount ?? $property->monthly_rent, 2) }}</p>
-                        <p class="text-sm text-gray-600 mt-1">{{ $property->campus_distance_label }}</p>
+                    <div class="bg-white/20 backdrop-blur rounded-2xl px-6 py-5 min-w-[240px]">
+                        <p class="text-sm text-white/80">Monthly rent</p>
+                        <p class="text-3xl font-bold mt-2">P{{ number_format($property->monthly_rent, 2) }}</p>
+                        <p class="text-sm text-white/80 mt-2">Deposit: P{{ number_format($property->deposit_amount ?? $property->monthly_rent, 2) }}</p>
+                        <p class="text-sm text-white/80 mt-2">{{ $property->campus_distance_label }}</p>
                     </div>
                 </div>
             </div>
