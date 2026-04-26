@@ -71,6 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             console.log('[Paddle] Opening overlay for transaction:', json.transaction_id);
+
+            // Listen for successful payment before opening overlay
+            window.addEventListener('paddle:completed', function onPaddleCompleted(e) {
+                window.removeEventListener('paddle:completed', onPaddleCompleted);
+                console.log('[Paddle] Payment completed:', e.detail);
+                window.location.href = @json(route('student.payments'));
+            }, { once: true });
+
             Paddle.Checkout.open({ transactionId: json.transaction_id });
 
         } catch (e) {
