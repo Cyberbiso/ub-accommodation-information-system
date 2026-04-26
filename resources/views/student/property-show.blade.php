@@ -190,10 +190,21 @@
                         @if($property->hasLeaseAgreement())
                             <div class="mt-4 bg-gray-50 rounded-xl p-4 text-sm text-gray-700">
                                 <p class="font-semibold text-gray-900">Lease agreement</p>
-                                <p class="mt-2">Read the lease before booking. Once your booking is approved you will sign it digitally from your bookings page.</p>
-                                <a href="{{ route('documents.property-lease.show', $property) }}" target="_blank" class="inline-flex items-center gap-2 mt-3 text-red-800 hover:underline">
-                                    <i class="fas fa-file-pdf"></i> Read lease agreement
-                                </a>
+                                @if($existingBooking?->isApprovedAwaitingLease())
+                                    <p class="mt-2">Read the lease, then sign it digitally below.</p>
+                                @else
+                                    <p class="mt-2">Read the lease before booking. You will sign it digitally once your booking is approved.</p>
+                                @endif
+                                <div class="mt-3 flex flex-wrap gap-3">
+                                    <a href="{{ route('documents.property-lease.show', $property) }}" target="_blank" class="inline-flex items-center gap-2 text-red-800 hover:underline">
+                                        <i class="fas fa-file-pdf"></i> Read lease agreement
+                                    </a>
+                                    @if($existingBooking?->isApprovedAwaitingLease())
+                                        <a href="{{ route('student.bookings', ['booking' => $existingBooking->id]) }}" class="inline-flex items-center gap-2 font-semibold text-red-800 hover:underline">
+                                            <i class="fas fa-signature"></i> Sign lease
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         @endif
                         @if($existingBooking)
@@ -207,10 +218,10 @@
                                     </a>
                                 @elseif($existingBooking->isApprovedAwaitingLease())
                                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-900">
-                                        Your booking was approved. Download the lease, sign it, and upload your signed copy.
+                                        Your booking was approved. Read the lease above then sign it digitally.
                                     </div>
                                     <a href="{{ route('student.bookings', ['booking' => $existingBooking->id]) }}" class="block w-full text-center bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
-                                        Upload signed lease
+                                        Sign lease
                                     </a>
                                 @elseif($existingBooking->isLeasePendingLandlordApproval())
                                     <div class="bg-purple-50 border border-purple-100 rounded-xl p-4 text-sm text-purple-900">
