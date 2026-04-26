@@ -40,6 +40,9 @@ class PaddleController extends Controller
             ->acceptJson()
             ->post($this->apiBase() . '/transactions', [
                 'collection_mode' => 'automatic',
+                'checkout'        => [
+                    'url' => route('student.payments'),
+                ],
                 'items' => [[
                     'price' => [
                         'name'        => 'Accommodation Payment — ' . $payment->payable->booking_reference,
@@ -70,6 +73,11 @@ class PaddleController extends Controller
 
         $transactionId = $response->json('data.id');
         $checkoutUrl   = $response->json('data.checkout.url');
+
+        Log::info('Paddle transaction created', [
+            'transaction_id' => $transactionId,
+            'checkout_url'   => $checkoutUrl,
+        ]);
 
         $details = $payment->payment_details ?? [];
         $details['paddle_transaction_id'] = $transactionId;
