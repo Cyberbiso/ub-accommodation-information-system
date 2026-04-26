@@ -40,9 +40,6 @@ class PaddleController extends Controller
             ->acceptJson()
             ->post($this->apiBase() . '/transactions', [
                 'collection_mode' => 'automatic',
-                'checkout'        => [
-                    'url' => route('student.payments'),
-                ],
                 'items' => [[
                     'price' => [
                         'name'        => 'Accommodation Payment — ' . $payment->payable->booking_reference,
@@ -72,7 +69,10 @@ class PaddleController extends Controller
         }
 
         $transactionId = $response->json('data.id');
-        $checkoutUrl   = $response->json('data.checkout.url');
+        $base          = config('services.paddle.environment') === 'sandbox'
+            ? 'https://sandbox-buy.paddle.com'
+            : 'https://buy.paddle.com';
+        $checkoutUrl   = $base . '/checkout/' . $transactionId;
 
         Log::info('Paddle transaction created', [
             'transaction_id' => $transactionId,
