@@ -198,6 +198,9 @@
     @if(config('services.paddle.client_side_token'))
     <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
     <script>
+        @if(config('services.paddle.environment') === 'sandbox')
+        Paddle.Environment.set('sandbox');
+        @endif
         Paddle.Initialize({
             token: '{{ config('services.paddle.client_side_token') }}',
             eventCallback: function (data) {
