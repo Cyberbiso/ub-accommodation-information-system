@@ -77,7 +77,11 @@ class PaddleController extends Controller
         }
 
         $transactionId = $response->json('data.id');
-        $checkoutUrl   = $response->json('data.checkout.url');
+
+        $base        = config('services.paddle.environment') === 'sandbox'
+            ? 'https://sandbox-buy.paddle.com'
+            : 'https://buy.paddle.com';
+        $checkoutUrl = $base . '/checkout/' . $transactionId;
 
         $details = $payment->payment_details ?? [];
         $details['paddle_transaction_id'] = $transactionId;
