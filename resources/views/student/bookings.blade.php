@@ -29,18 +29,22 @@
                 @forelse($bookings as $booking)
                     @php
                         $statusColors = [
-                            'pending_landlord_review'   => 'bg-yellow-100 text-yellow-800',
-                            'approved_awaiting_lease'   => 'bg-blue-100 text-blue-800',
-                            'approved_awaiting_payment' => 'bg-indigo-100 text-indigo-800',
-                            'confirmed'                 => 'bg-green-100 text-green-800',
-                            'rejected'                  => 'bg-red-100 text-red-800',
+                            'pending_landlord_review'          => 'bg-yellow-100 text-yellow-800',
+                            'approved_awaiting_lease'          => 'bg-blue-100 text-blue-800',
+                            'lease_pending_landlord_approval'  => 'bg-purple-100 text-purple-800',
+                            'approved_awaiting_payment'        => 'bg-indigo-100 text-indigo-800',
+                            'pending_payment'                  => 'bg-indigo-100 text-indigo-800',
+                            'confirmed'                        => 'bg-green-100 text-green-800',
+                            'rejected'                         => 'bg-red-100 text-red-800',
                         ];
                         $statusLabels = [
-                            'pending_landlord_review'   => 'Awaiting Landlord Review',
-                            'approved_awaiting_lease'   => 'Approved — Sign Lease',
-                            'approved_awaiting_payment' => 'Lease Signed — Proceed to Payment',
-                            'confirmed'                 => 'Confirmed',
-                            'rejected'                  => 'Rejected',
+                            'pending_landlord_review'          => 'Awaiting Landlord Review',
+                            'approved_awaiting_lease'          => 'Approved — Sign Lease',
+                            'lease_pending_landlord_approval'  => 'Lease Submitted — Awaiting Approval',
+                            'approved_awaiting_payment'        => 'Lease Approved — Proceed to Payment',
+                            'pending_payment'                  => 'Proceed to Payment',
+                            'confirmed'                        => 'Confirmed',
+                            'rejected'                         => 'Rejected',
                         ];
                         $badgeClass = $statusColors[$booking->status] ?? 'bg-gray-100 text-gray-800';
                         $statusLabel = $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status));
@@ -144,8 +148,8 @@
                                                 <a href="{{ route('documents.signed-lease.show', $booking) }}" target="_blank" class="text-sm text-red-800 hover:underline">View submitted signature</a>
                                             @endif
 
-                                        {{-- STEP 4: Lease approved — proceed to payment --}}
-                                        @elseif($booking->isApprovedAwaitingPayment())
+                                        {{-- STEP 4: Lease approved — proceed to payment (also handles legacy pending_payment status) --}}
+                                        @elseif($booking->isApprovedAwaitingPayment() || $booking->status === 'pending_payment')
                                             <p class="text-sm font-semibold text-gray-900">Step 4 of 4 — Complete payment</p>
                                             <p class="text-sm text-green-700">Lease approved. Complete your payment below to confirm your booking.</p>
 
@@ -188,7 +192,7 @@
                             <p class="text-sm text-gray-500">Amount due</p>
                             <p class="text-3xl font-bold text-gray-900 mt-2">P{{ number_format($booking->total_amount, 2) }}</p>
 
-                            @if($booking->isApprovedAwaitingPayment() && $booking->payment && $booking->payment->status === 'pending')
+                            @if(($booking->isApprovedAwaitingPayment() || $booking->status === 'pending_payment') && $booking->payment && $booking->payment->status === 'pending')
                                 @include('student._payment-form', [
                                     'payment' => $booking->payment,
                                     'submitLabel' => 'Pay and confirm',

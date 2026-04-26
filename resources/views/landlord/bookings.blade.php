@@ -23,6 +23,7 @@
                             'approved_awaiting_lease'          => 'bg-blue-100 text-blue-800',
                             'lease_pending_landlord_approval'  => 'bg-purple-100 text-purple-800',
                             'approved_awaiting_payment'        => 'bg-indigo-100 text-indigo-800',
+                            'pending_payment'                  => 'bg-indigo-100 text-indigo-800',
                             'confirmed'                        => 'bg-green-100 text-green-800',
                             'rejected'                         => 'bg-red-100 text-red-800',
                         ];
@@ -31,6 +32,7 @@
                             'approved_awaiting_lease'          => 'Awaiting Signed Lease',
                             'lease_pending_landlord_approval'  => 'Signed Lease — Review Required',
                             'approved_awaiting_payment'        => 'Awaiting Payment',
+                            'pending_payment'                  => 'Awaiting Payment',
                             'confirmed'                        => 'Confirmed',
                             'rejected'                         => 'Rejected',
                         ];
