@@ -39,6 +39,7 @@ class PaddleController extends Controller
         $response = Http::withToken(config('services.paddle.api_key'))
             ->acceptJson()
             ->post($this->apiBase() . '/transactions', [
+                'collection_mode' => 'automatic',
                 'items' => [[
                     'price' => [
                         'name'        => 'Accommodation Payment — ' . $payment->payable->booking_reference,
