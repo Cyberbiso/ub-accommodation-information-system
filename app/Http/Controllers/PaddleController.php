@@ -124,6 +124,90 @@ class PaddleController extends Controller
         ]);
     }
 
+    public function verifyPayment(Request $request)
+    {
+        $request->validate(['transaction_id' => 'required|string']);
+
+        $txnId = $request->transaction_id;
+
+        // Fetch transaction from Paddle API to confirm it's completed
+        $response = Http::withToken(config('services.paddle.api_key'))
+            ->acceptJson()
+            ->get($this->apiBase() . '/transactions/' . $txnId);
+
+        if (!$response->successful()) {
+            Log::error('Paddle verifyPayment: API fetch failed', ['txn_id' => $txnId]);
+            return response()->json(['error' => 'Could not verify transaction.'], 500);
+        }
+
+        $data   = $response->json('data');
+        $status = $data['status'] ?? null;
+
+        if ($status !== 'completed') {
+            Log::warning('Paddle verifyPayment: transaction not completed', ['txn_id' => $txnId, 'status' => $status]);
+            return response()->json(['error' => 'Payment not completed yet.'], 422);
+        }
+
+        $customData = $data['custom_data'] ?? [];
+        $paymentId  = $customData['payment_id'] ?? null;
+
+        $payment = Payment::where('id', $paymentId)
+            ->where('student_id', Auth::id())
+            ->where('status', 'pending')
+            ->with('payable')
+            ->first();
+
+        if (!$payment) {
+            // Already processed or doesn't belong to this user — treat as success
+            return response()->json(['success' => true]);
+        }
+
+        try {
+            DB::transaction(function () use ($payment, $txnId) {
+                $details                          = $payment->payment_details ?? [];
+                $details['paddle_transaction_id'] = $txnId;
+
+                $payment->update([
+                    'payment_method'  => 'paddle',
+                    'payment_details' => $details,
+                ]);
+
+                $payment->markAsCompleted($txnId);
+
+                if ($payment->payable instanceof PropertyBooking) {
+                    if (!$payment->payable->confirm()) {
+                        throw new RuntimeException('property_unavailable');
+                    }
+
+                    SystemNotification::notifyUser(
+                        $payment->payable->landlord_id,
+                        'Booking payment received',
+                        'Payment completed for booking ' . $payment->payable->booking_reference . '.',
+                        route('landlord.bookings'),
+                        'success',
+                        $payment->student_id
+                    );
+                }
+            });
+
+            SystemNotification::notifyUser(
+                $payment->student_id,
+                'Payment successful',
+                'Your payment of ' . $payment->formatted_amount . ' was processed successfully via Paddle.',
+                route('student.payments'),
+                'success',
+                $payment->student_id
+            );
+
+            Log::info('Paddle verifyPayment: payment marked complete', ['payment_id' => $payment->id, 'txn_id' => $txnId]);
+        } catch (RuntimeException $e) {
+            Log::error('Paddle verifyPayment: processing failed', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
+            return response()->json(['error' => 'Payment recorded but booking confirmation failed.'], 500);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function webhook(Request $request)
     {
         $signature = $request->header('Paddle-Signature');

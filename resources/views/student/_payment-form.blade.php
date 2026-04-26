@@ -73,9 +73,25 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('[Paddle] Opening overlay for transaction:', json.transaction_id);
 
             // Listen for successful payment before opening overlay
-            window.addEventListener('paddle:completed', function onPaddleCompleted(e) {
+            window.addEventListener('paddle:completed', async function onPaddleCompleted(e) {
                 window.removeEventListener('paddle:completed', onPaddleCompleted);
-                console.log('[Paddle] Payment completed:', e.detail);
+                console.log('[Paddle] Payment completed, verifying with server...', e.detail);
+
+                const txnId = e.detail?.data?.transaction_id ?? e.detail?.transaction_id ?? null;
+
+                try {
+                    await fetch(@json(route('student.payments.paddle.verify')), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                        body: JSON.stringify({ transaction_id: txnId }),
+                    });
+                } catch (err) {
+                    console.error('[Paddle] Verify call failed:', err);
+                }
+
                 window.location.href = @json(route('student.payments'));
             }, { once: true });
 
