@@ -52,16 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            Paddle.Checkout.open({ transactionId: json.transaction_id });
+            // Redirect to Paddle hosted checkout (avoids JS overlay domain restrictions)
+            window.location.href = json.checkout_url;
         } catch (e) {
             alert('Network error. Please check your connection and try again.');
             paddleBtn.disabled = false;
             paddleBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay now';
         }
-    });
-
-    window.addEventListener('paddle:completed', () => {
-        window.location.href = @json(route('student.payments'));
     });
 });
 </script>
