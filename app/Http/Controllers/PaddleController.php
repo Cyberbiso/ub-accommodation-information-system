@@ -86,11 +86,16 @@ class PaddleController extends Controller
             'checkout'       => $transactionData['checkout'] ?? null,
         ]);
 
+        $checkoutUrl = $transactionData['checkout']['url'] ?? null;
+
         $details = $payment->payment_details ?? [];
         $details['paddle_transaction_id'] = $transactionId;
         $payment->update(['payment_details' => $details]);
 
-        return response()->json(['transaction_id' => $transactionId]);
+        return response()->json([
+            'transaction_id' => $transactionId,
+            'checkout_url'   => $checkoutUrl,
+        ]);
     }
 
     public function webhook(Request $request)
