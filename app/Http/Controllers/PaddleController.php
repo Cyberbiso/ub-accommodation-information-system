@@ -76,7 +76,15 @@ class PaddleController extends Controller
             return response()->json(['error' => 'Could not create Paddle checkout. Check your API key.'], 500);
         }
 
-        $transactionId = $response->json('data.id');
+        $transactionData = $response->json('data');
+        $transactionId   = $transactionData['id'] ?? null;
+
+        Log::info('Paddle transaction created', [
+            'transaction_id' => $transactionId,
+            'status'         => $transactionData['status'] ?? null,
+            'customer_id'    => $transactionData['customer_id'] ?? null,
+            'checkout'       => $transactionData['checkout'] ?? null,
+        ]);
 
         $details = $payment->payment_details ?? [];
         $details['paddle_transaction_id'] = $transactionId;
