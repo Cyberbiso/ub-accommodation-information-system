@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            Paddle.Checkout.open({ url: json.checkout_url });
+            window.location.href = json.checkout_url;
         } catch (e) {
             alert('Network error. Please check your connection and try again.');
             paddleBtn.disabled = false;
