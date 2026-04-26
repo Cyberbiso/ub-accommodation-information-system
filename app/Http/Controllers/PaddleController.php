@@ -34,38 +34,32 @@ class PaddleController extends Controller
         // BWP is not supported by Paddle, so we use USD for sandbox simulation.
         $amountInCents = (string) (int) round($payment->amount * 100);
 
-        $user       = Auth::user();
-        $customerId = $this->resolveCustomerId($user->email, $user->name);
-
-        $payload = [
-            'items' => [[
-                'price' => [
-                    'name'        => $payment->type_label,
-                    'description' => $payment->type_label . ' — UB-UniStay (Sandbox)',
-                    'product' => [
-                        'name'         => 'UB-UniStay Accommodation Payment',
-                        'tax_category' => 'standard',
-                    ],
-                    'unit_price' => [
-                        'amount'        => $amountInCents,
-                        'currency_code' => 'USD',
-                    ],
-                ],
-                'quantity' => 1,
-            ]],
-            'custom_data' => [
-                'payment_id' => (string) $payment->id,
-                'student_id' => (string) Auth::id(),
-            ],
-        ];
-
-        if ($customerId) {
-            $payload['customer_id'] = $customerId;
-        }
+        $user = Auth::user();
 
         $response = Http::withToken(config('services.paddle.api_key'))
             ->acceptJson()
-            ->post($this->apiBase() . '/transactions', $payload);
+            ->post($this->apiBase() . '/transactions', [
+                'items' => [[
+                    'price' => [
+                        'name'        => 'UB-UniStay Accommodation Payment',
+                        'tax_mode'    => 'external',
+                        'product'     => [
+                            'name'         => 'UB-UniStay Accommodation Payment',
+                            'tax_category' => 'standard',
+                        ],
+                        'unit_price'  => [
+                            'amount'        => $amountInCents,
+                            'currency_code' => 'USD',
+                        ],
+                    ],
+                    'quantity' => 1,
+                ]],
+                'customer_email' => $user->email,
+                'custom_data'    => [
+                    'payment_id' => (string) $payment->id,
+                    'student_id' => (string) Auth::id(),
+                ],
+            ]);
 
         if (!$response->successful()) {
             Log::error('Paddle transaction creation failed', [
