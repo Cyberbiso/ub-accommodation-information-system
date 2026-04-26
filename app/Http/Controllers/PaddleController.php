@@ -34,6 +34,8 @@ class PaddleController extends Controller
         // BWP is not supported by Paddle, so we use USD for sandbox simulation.
         $amountInCents = (string) (int) round($payment->amount * 100);
 
+        $user = Auth::user();
+
         $response = Http::withToken(config('services.paddle.api_key'))
             ->acceptJson()
             ->post($this->apiBase() . '/transactions', [
@@ -52,6 +54,10 @@ class PaddleController extends Controller
                     ],
                     'quantity' => 1,
                 ]],
+                'customer' => [
+                    'email' => $user->email,
+                    'name'  => $user->name,
+                ],
                 'custom_data' => [
                     'payment_id' => (string) $payment->id,
                     'student_id' => (string) Auth::id(),
