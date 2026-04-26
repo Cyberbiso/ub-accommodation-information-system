@@ -141,6 +141,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/payments', [StudentController::class, 'payments'])->name('payments');
         Route::post('/payments/process', [StudentController::class, 'processPayment'])->name('payments.process');
         Route::post('/payments/paddle/checkout', [PaddleController::class, 'createCheckout'])->name('payments.paddle.checkout');
+        Route::get('/payments/paddle/debug', [PaddleController::class, 'debugConfig'])->name('payments.paddle.debug');
 
         // Virtual help desk
         Route::get('/support', [StudentController::class, 'supportDesk'])->name('support');

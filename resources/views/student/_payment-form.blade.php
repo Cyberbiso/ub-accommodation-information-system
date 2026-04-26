@@ -26,7 +26,12 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const paddleBtn = document.getElementById(@json($paddleBtnId));
-    if (!paddleBtn || typeof Paddle === 'undefined') return;
+
+    // FRONTEND CHECK 1: Paddle.js loaded?
+    if (!paddleBtn) { console.error('[Paddle] Button not found:', @json($paddleBtnId)); return; }
+    if (typeof Paddle === 'undefined') { console.error('[Paddle] Paddle.js not loaded — check client_side_token config'); return; }
+
+    console.log('[Paddle] Initialized. Environment:', Paddle.Environment?.get?.() ?? 'unknown');
 
     paddleBtn.addEventListener('click', async () => {
         const paymentId = paddleBtn.dataset.paymentId;
@@ -34,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
         paddleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening checkout…';
 
         try {
+            console.log('[Paddle] Requesting transaction for payment_id:', paymentId);
+
             const resp = await fetch(@json(route('student.payments.paddle.checkout')), {
                 method: 'POST',
                 headers: {
@@ -44,17 +51,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const json = await resp.json();
+            console.log('[Paddle] Backend response (HTTP ' + resp.status + '):', json);
 
             if (!resp.ok || json.error) {
-                alert(json.error ?? 'Failed to open checkout. Please try again.');
+                console.error('[Paddle] BACKEND ERROR:', json.error ?? json);
+                alert('[Backend error] ' + (json.error ?? 'Failed to create transaction. Check laravel.log.'));
                 paddleBtn.disabled = false;
                 paddleBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay now';
                 return;
             }
 
+            // FRONTEND CHECK 2: transaction_id present?
+            if (!json.transaction_id) {
+                console.error('[Paddle] No transaction_id in response:', json);
+                alert('[Frontend error] No transaction_id returned from server.');
+                paddleBtn.disabled = false;
+                paddleBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay now';
+                return;
+            }
+
+            console.log('[Paddle] Opening overlay for transaction:', json.transaction_id);
             Paddle.Checkout.open({ transactionId: json.transaction_id });
+
         } catch (e) {
-            alert('Network error. Please check your connection and try again.');
+            console.error('[Paddle] NETWORK/JS ERROR:', e);
+            alert('[Network error] ' + e.message);
             paddleBtn.disabled = false;
             paddleBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay now';
         }

@@ -21,6 +21,18 @@ class PaddleController extends Controller
             : 'https://api.paddle.com';
     }
 
+    public function debugConfig()
+    {
+        return response()->json([
+            'environment'   => config('services.paddle.environment'),
+            'api_base'      => $this->apiBase(),
+            'api_key_prefix'       => substr(config('services.paddle.api_key') ?? '', 0, 20) . '...',
+            'client_token_prefix'  => substr(config('services.paddle.client_side_token') ?? '', 0, 12) . '...',
+            'price_id'      => config('services.paddle.price_id'),
+            'product_id'    => config('services.paddle.product_id'),
+        ]);
+    }
+
     public function createCheckout(Request $request)
     {
         $request->validate(['payment_id' => 'required|integer']);
