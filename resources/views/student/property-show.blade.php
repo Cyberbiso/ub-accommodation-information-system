@@ -203,18 +203,27 @@
                         @endif
                         @if($existingBooking)
                             <div class="mt-4 space-y-3">
-                                @if($existingBooking->status === 'pending_payment')
+                                @if($existingBooking->isPendingLandlordReview())
                                     <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-900">
-                                        This property is already reserved in your name, but payment is still pending.
+                                        Your booking request is awaiting landlord review.
+                                    </div>
+                                    <a href="{{ route('student.bookings', ['booking' => $existingBooking->id]) }}" class="block w-full text-center border border-gray-300 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                        Open this booking
+                                    </a>
+                                @elseif($existingBooking->isApprovedAwaitingLease())
+                                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-900">
+                                        Your booking was approved. Download the lease, sign it, and upload your signed copy.
                                     </div>
                                     <a href="{{ route('student.bookings', ['booking' => $existingBooking->id]) }}" class="block w-full text-center bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
+                                        Upload signed lease
+                                    </a>
+                                @elseif($existingBooking->isApprovedAwaitingPayment())
+                                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-900">
+                                        Lease received. Complete your payment to confirm this booking.
+                                    </div>
+                                    <a href="{{ route('student.payments') }}" class="block w-full text-center bg-red-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-900 transition">
                                         Continue payment for this booking
                                     </a>
-                                    @if($existingBooking->payment)
-                                        <a href="{{ route('student.payments') }}" class="block w-full text-center border border-gray-300 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
-                                            Open all pending payments
-                                        </a>
-                                    @endif
                                 @else
                                     <div class="bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-900">
                                         This property is already confirmed in your bookings.

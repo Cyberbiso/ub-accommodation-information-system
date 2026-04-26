@@ -18,11 +18,23 @@
                     <h1 class="text-3xl font-bold text-gray-900 mt-2">{{ Auth::user()->company_name ?? Auth::user()->name }}</h1>
                     <p class="text-gray-600 mt-2">Advertise verified accommodation, manage viewing requests, and track confirmed student bookings.</p>
                 </div>
-                <div class="flex flex-wrap gap-3">
-                    <span class="px-4 py-2 rounded-full text-sm font-semibold {{ Auth::user()->isVerifiedLandlord() ? 'bg-green-100 text-green-800' : (Auth::user()->landlord_verification_status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
-                        Status: {{ ucfirst(str_replace('_', ' ', Auth::user()->landlord_verification_status)) }}
+                <div class="flex flex-wrap gap-3 items-center">
+                    @php
+                        $vstatus = Auth::user()->landlord_verification_status;
+                        $statusBadge = match(true) {
+                            Auth::user()->isVerifiedLandlord()   => ['bg-green-100 text-green-800', 'Verified'],
+                            $vstatus === 'rejected'              => ['bg-red-100 text-red-800', 'Rejected'],
+                            $vstatus === 'needs_more_info'       => ['bg-blue-100 text-blue-800', 'More info required'],
+                            $vstatus === 'pending'               => ['bg-amber-100 text-amber-800', 'Under review'],
+                            default                              => ['bg-gray-100 text-gray-700', 'Not started'],
+                        };
+                    @endphp
+                    <span class="px-4 py-2 rounded-full text-sm font-semibold {{ $statusBadge[0] }}">
+                        {{ $statusBadge[1] }}
                     </span>
-                    <a href="{{ route('landlord.verification') }}" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50">Open verification</a>
+                    <a href="{{ route('landlord.verification') }}" class="px-4 py-2 rounded-lg text-sm font-semibold bg-red-800 text-white hover:bg-red-900 transition">
+                        Open verification
+                    </a>
                 </div>
             </div>
         </div>

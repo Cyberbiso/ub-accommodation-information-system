@@ -35,16 +35,16 @@
                                 @if($document?->path)
                                     <a href="{{ route('documents.landlord-verification.show', $document) }}" target="_blank" class="inline-flex text-sm text-red-800 hover:underline">Open document</a>
                                 @endif
-                                @if($document)
+                                @if($document && in_array($document->status, ['rejected', 'more_info_required']))
                                     <form method="POST" action="{{ route('landlord.verification.documents.replace', $document) }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2">
                                         @csrf
-                                        <input type="file" name="document" class="block w-full text-xs text-gray-700" @disabled($packageLocked)>
-                                        <button type="submit" class="px-3 py-2 rounded-lg text-xs font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed" @disabled($packageLocked)>Replace</button>
+                                        <input type="file" name="document" class="block w-full text-xs text-gray-700">
+                                        <button type="submit" class="px-3 py-2 rounded-lg text-xs font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition">Replace</button>
                                     </form>
                                     <form method="POST" action="{{ route('landlord.verification.documents.destroy', $document) }}" onsubmit="return confirm('Remove this verification document?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="px-3 py-2 rounded-lg text-xs font-semibold border border-red-200 text-red-700 hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed" @disabled($packageLocked)>Delete</button>
+                                        <button type="submit" class="px-3 py-2 rounded-lg text-xs font-semibold border border-red-200 text-red-700 hover:bg-red-50 transition">Delete</button>
                                     </form>
                                 @endif
                             </div>

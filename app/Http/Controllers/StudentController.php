@@ -316,7 +316,12 @@ class StudentController extends Controller
             ->first();
         $existingBooking = PropertyBooking::where('student_id', Auth::id())
             ->where('property_id', $property->id)
-            ->whereIn('status', ['pending_payment', 'confirmed'])
+            ->whereIn('status', [
+                PropertyBooking::STATUS_PENDING_LANDLORD_REVIEW,
+                PropertyBooking::STATUS_APPROVED_AWAITING_LEASE,
+                PropertyBooking::STATUS_APPROVED_AWAITING_PAYMENT,
+                PropertyBooking::STATUS_CONFIRMED,
+            ])
             ->with('payment')
             ->latest()
             ->first();
