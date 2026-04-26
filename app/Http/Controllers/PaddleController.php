@@ -36,10 +36,18 @@ class PaddleController extends Controller
 
         $user = Auth::user();
 
+        $customerId = $this->resolveCustomerId($user->email, $user->name ?? $user->email);
+
+        if (!$customerId) {
+            Log::error('Paddle customer resolution failed', ['payment_id' => $payment->id]);
+            return response()->json(['error' => 'Could not initialise Paddle customer.'], 500);
+        }
+
         $response = Http::withToken(config('services.paddle.api_key'))
             ->acceptJson()
             ->post($this->apiBase() . '/transactions', [
                 'collection_mode' => 'automatic',
+                'customer_id'     => $customerId,
                 'items' => [[
                     'price' => [
                         'name'        => 'Accommodation Payment — ' . $payment->payable->booking_reference,
