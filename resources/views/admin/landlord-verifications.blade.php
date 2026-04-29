@@ -45,7 +45,7 @@
                                 </div>
                             @endif
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                                 @foreach($landlord->landlordVerificationDocuments as $document)
                                     <div class="border border-gray-200 rounded-xl p-4">
                                         <div class="flex items-center justify-between gap-3">
@@ -56,9 +56,24 @@
                                         </div>
                                         <p class="text-sm text-gray-600 mt-2">{{ $document->original_name }}</p>
                                         @if($document->review_notes)
-                                            <p class="text-sm text-gray-700 mt-3">{{ $document->review_notes }}</p>
+                                            <div class="mt-3 bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                                                <span class="font-semibold text-gray-900">Review notes:</span>
+                                                {{ $document->review_notes }}
+                                            </div>
                                         @endif
-                                        <a href="{{ route('documents.landlord-verification.show', $document) }}" target="_blank" class="inline-flex mt-4 text-sm text-red-800 hover:underline">Open document</a>
+                                        <a href="{{ route('documents.landlord-verification.show', $document) }}" target="_blank" class="inline-flex mt-3 text-sm text-red-800 hover:underline">Open document</a>
+
+                                        @if($landlord->landlord_verification_status !== 'verified' || $document->status !== 'verified')
+                                            <form method="POST" action="{{ route('admin.landlords.verifications.documents.review', $document) }}" class="mt-4 space-y-2 border-t border-gray-100 pt-3" onsubmit="this.querySelectorAll('button[type=submit]').forEach(b => b.disabled = true)">
+                                                @csrf
+                                                <textarea name="notes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Notes for this document">{{ $document->review_notes }}</textarea>
+                                                <div class="grid grid-cols-3 gap-2">
+                                                    <button type="submit" name="action" value="approve" class="bg-green-700 text-white px-2 py-2 rounded-md text-xs font-semibold hover:bg-green-800 transition">Approve</button>
+                                                    <button type="submit" name="action" value="request_more_info" class="bg-blue-700 text-white px-2 py-2 rounded-md text-xs font-semibold hover:bg-blue-800 transition">More info</button>
+                                                    <button type="submit" name="action" value="reject" class="bg-red-700 text-white px-2 py-2 rounded-md text-xs font-semibold hover:bg-red-800 transition">Reject</button>
+                                                </div>
+                                            </form>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>

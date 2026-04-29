@@ -41,11 +41,19 @@
                             @endif
                         </div>
                         @if($payment->status === 'pending')
-                            <div class="w-full lg:max-w-md">
+                            <div class="w-full lg:max-w-md space-y-2">
                                 @include('student._payment-form', [
                                     'payment' => $payment,
                                     'submitLabel' => 'Pay now',
                                 ])
+                                @if(($payment->payment_details['paddle_transaction_id'] ?? null))
+                                    <form method="POST" action="{{ route('student.payments.paddle.sync', $payment) }}">
+                                        @csrf
+                                        <button type="submit" class="w-full border border-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 transition">
+                                            Already paid? Sync status
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         @endif
                     </div>

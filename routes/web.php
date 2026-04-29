@@ -142,6 +142,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/payments/process', [StudentController::class, 'processPayment'])->name('payments.process');
         Route::post('/payments/paddle/checkout', [PaddleController::class, 'createCheckout'])->name('payments.paddle.checkout');
         Route::post('/payments/paddle/verify', [PaddleController::class, 'verifyPayment'])->name('payments.paddle.verify');
+        Route::post('/payments/{payment}/paddle/sync', [PaddleController::class, 'syncPayment'])->name('payments.paddle.sync');
         Route::get('/payments/paddle/debug', [PaddleController::class, 'debugConfig'])->name('payments.paddle.debug');
 
         // Virtual help desk
@@ -197,6 +198,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         // Landlord verification routes
         Route::get('/landlords/verifications', [WelfareController::class, 'landlordVerifications'])->name('landlords.verifications');
         Route::post('/landlords/{landlord}/verification', [WelfareController::class, 'processLandlordVerification'])->name('landlords.verifications.process');
+        Route::post('/landlords/verifications/documents/{document}', [WelfareController::class, 'reviewLandlordVerificationDocument'])->name('landlords.verifications.documents.review');
 
         // Application routes
         Route::get('/applications', [WelfareController::class, 'applications'])->name('applications');
@@ -230,6 +232,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
         Route::get('/landlords/verifications', [AdminController::class, 'landlordVerifications'])->name('landlords.verifications');
         Route::post('/landlords/{landlord}/verification', [AdminController::class, 'processLandlordVerification'])->name('landlords.verifications.process');
+        Route::post('/landlords/verifications/documents/{document}', [AdminController::class, 'reviewLandlordVerificationDocument'])->name('landlords.verifications.documents.review');
         Route::get('/properties/pending', [AdminController::class, 'pendingProperties'])->name('properties.pending');
         Route::post('/properties/{property}/review', [AdminController::class, 'reviewProperty'])->name('properties.review');
         Route::get('/announcements', [AdminController::class, 'announcements'])->name('announcements');

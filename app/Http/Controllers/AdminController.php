@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Accommodation;
 use App\Models\Announcement;
 use App\Models\Application;
+use App\Models\LandlordVerificationDocument;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\SystemNotification;
@@ -294,6 +295,95 @@ class AdminController extends Controller
         );
 
         return back()->with('success', 'Landlord fully verified.');
+    }
+
+    public function reviewLandlordVerificationDocument(Request $request, LandlordVerificationDocument $document): RedirectResponse
+    {
+        $validated = $request->validate([
+            'action' => 'required|in:approve,request_more_info,reject',
+            'notes' => 'nullable|string|max:2000',
+        ]);
+
+        $landlord = $document->user;
+        abort_unless($landlord && $landlord->isLandlord(), 404);
+
+        $document->update([
+            'status' => match ($validated['action']) {
+                'approve' => 'verified',
+                'request_more_info' => 'more_info_required',
+                default => 'rejected',
+            },
+            'review_notes' => $validated['notes'],
+            'verified_by' => Auth::id(),
+            'verified_at' => now(),
+        ]);
+
+        $this->recomputeLandlordVerificationStatus($landlord->fresh('landlordVerificationDocuments'));
+
+        $stageLabel = $document->document_type_label;
+        $messages = [
+            'approve' => [$stageLabel . ' approved', 'Your ' . $stageLabel . ' was approved.'],
+            'request_more_info' => [$stageLabel . ' needs more information', 'Please review notes and resubmit your ' . $stageLabel . '.'],
+            'reject' => [$stageLabel . ' rejected', 'Your ' . $stageLabel . ' was rejected. See notes.'],
+        ];
+        [$title, $body] = $messages[$validated['action']];
+        if ($validated['notes']) {
+            $body .= ' Notes: ' . $validated['notes'];
+        }
+        $this->notifyLandlordVerificationDecision($landlord, $title, $body);
+
+        return back()->with('success', $stageLabel . ' updated.');
+    }
+
+    private function recomputeLandlordVerificationStatus(User $landlord): void
+    {
+        $stages = array_keys($landlord->landlordVerificationSteps());
+        $latestByStage = [];
+        foreach ($landlord->landlordVerificationDocuments as $doc) {
+            $existing = $latestByStage[$doc->document_type] ?? null;
+            if (!$existing || $doc->id > $existing->id) {
+                $latestByStage[$doc->document_type] = $doc;
+            }
+        }
+
+        $statuses = [];
+        foreach ($stages as $stage) {
+            $statuses[$stage] = $latestByStage[$stage]->status ?? 'pending';
+        }
+
+        $hasRejected = in_array('rejected', $statuses, true);
+        $hasMoreInfo = in_array('more_info_required', $statuses, true);
+        $allVerified = !empty($statuses) && count(array_filter($statuses, fn ($s) => $s === 'verified')) === count($statuses);
+
+        if ($hasRejected) {
+            $newStatus = 'rejected';
+            $verifiedAt = null;
+        } elseif ($allVerified) {
+            $newStatus = 'verified';
+            $verifiedAt = now();
+        } elseif ($hasMoreInfo) {
+            $newStatus = 'needs_more_info';
+            $verifiedAt = null;
+        } else {
+            $newStatus = 'pending';
+            $verifiedAt = null;
+        }
+
+        $nextStage = 'completed';
+        foreach ($stages as $stage) {
+            if (($statuses[$stage] ?? 'pending') !== 'verified') {
+                $nextStage = $stage;
+                break;
+            }
+        }
+
+        $landlord->update([
+            'landlord_verification_status' => $newStatus,
+            'landlord_verification_stage' => $nextStage,
+            'landlord_verified_at' => $verifiedAt,
+            'landlord_verification_reviewed_by' => Auth::id(),
+            'landlord_verification_reviewed_at' => now(),
+        ]);
     }
 
     public function pendingProperties(Request $request): View

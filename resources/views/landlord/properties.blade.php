@@ -39,6 +39,11 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <a href="{{ route('landlord.properties.edit', $property) }}" class="border border-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Edit</a>
+                            <form method="POST" action="{{ route('landlord.properties.destroy', $property) }}" onsubmit="return confirm('Remove this property listing?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="border border-red-200 text-red-700 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition">Delete</button>
+                            </form>
                         </div>
                     </div>
                 @empty

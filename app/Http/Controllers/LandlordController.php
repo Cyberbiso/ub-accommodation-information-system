@@ -232,6 +232,19 @@ class LandlordController extends Controller
         }
 
         $validated = $this->validateProperty($request);
+
+        $duplicate = Property::where('landlord_id', Auth::id())
+            ->where('title', $validated['title'])
+            ->where('address', $validated['address'])
+            ->where('monthly_rent', $validated['monthly_rent'])
+            ->where('created_at', '>=', now()->subMinutes(2))
+            ->first();
+
+        if ($duplicate) {
+            return redirect()->route('landlord.properties')
+                ->with('success', 'Property submitted successfully and is now awaiting admin approval.');
+        }
+
         $property = Property::create($this->buildPropertyPayload($validated, null, $request));
         $this->syncPropertyLeaseAgreement($property, $request);
         $this->notifyAdminsAboutPropertySubmission($property);
